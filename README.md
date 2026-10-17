@@ -33,19 +33,9 @@ livingpixel/
 
 You can publish this landing page for free on GitHub Pages in 2 minutes:
 
-### Option A: As your Personal/Organization Portfolio (`username.github.io`)
-1. Create a new repository on your GitHub account named:
-   `<your-github-username>.github.io`
-2. Push the files in this directory to the repository:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial release of LivingPixel Samsung TV landing page"
-   git branch -M main
-   git remote add origin https://github.com/<your-github-username>/<your-github-username>.github.io.git
-   git push -u origin main
-   ```
-3. Your landing page will immediately be live at `https://<your-github-username>.github.io`!
+### Live Deployment (`tatran.github.io`)
+- **Live URL**: [https://tatran.github.io](https://tatran.github.io)
+- **Repository**: [https://github.com/tatran/tatran.github.io](https://github.com/tatran/tatran.github.io)
 
 ### Option B: As a Project Repository (`username.github.io/livingpixel`)
 1. Create a repository named `livingpixel` (or `samsung-tv-apps`).

@@ -1,48 +1,751 @@
 <!DOCTYPE html>
-<html><head>
-  <!--<meta http-equiv="refresh"
-   content="0; url=https://dl.dropboxusercontent.com/u/16220179/Math/index.html">-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LivingPixel — Bespoke Samsung Tizen OS Apps & TV Engineering</title>
+  <meta name="description" content="LivingPixel crafts high-performance Samsung Tizen OS applications for Smart TV, OTT streaming services, commercial digital signage, and enterprise hospitality solutions.">
+  <meta name="keywords" content="Samsung Tizen TV, Tizen OS App Development, Smart TV Developer, OTT App Development, Samsung Signage, Tizen .NET, AVPlay, LivingPixel">
+  <meta name="author" content="Lubos Kostros — LivingPixel">
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="LivingPixel — Bespoke Samsung Tizen OS Applications">
+  <meta property="og:description" content="Commercial-grade Samsung Smart TV development, streaming players, digital signage, and specialized Tizen consulting.">
+  <meta property="og:image" content="assets/images/hero-tv.jpg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 180" width="100%" height="180">
-  <defs>
-    <linearGradient id="lp-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF5252" />
-      <stop offset="50%" stop-color="#FF4081" />
-      <stop offset="100%" stop-color="#7C4DFF" />
-    </linearGradient>
-    <filter id="lp-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="4" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1" aria-hidden="true"></div>
+  <div class="ambient-glow glow-2" aria-hidden="true"></div>
+  <div class="ambient-glow glow-3" aria-hidden="true"></div>
 
-  <rect width="680" height="180" rx="16" fill="#0D0B18" />
+  <!-- Navigation -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#hero" class="brand-logo" aria-label="LivingPixel Home">
+        <span class="logo-pixel">
+          <span class="pixel-dot"></span>
+        </span>
+        <span class="logo-text">living<span class="text-gradient">pixel</span></span>
+        <span class="badge-tizen">TIZEN OS</span>
+      </a>
 
-  <!-- Logo Mark -->
-  <g transform="translate(50, 38)">
-    <rect x="10" y="10" width="24" height="24" rx="5" fill="#FF5252" opacity="0.9" />
-    <rect x="38" y="10" width="24" height="24" rx="5" fill="#FF4081" />
-    <rect x="66" y="10" width="24" height="24" rx="5" fill="#7C4DFF" filter="url(#lp-glow)" />
+      <nav class="nav-links" id="navLinks">
+        <a href="#services" class="nav-link">Services</a>
+        <a href="#simulator" class="nav-link">TV Simulator</a>
+        <a href="#showcase" class="nav-link">Showcase</a>
+        <a href="#stack" class="nav-link">Tech Stack</a>
+        <a href="#estimator" class="nav-link">Estimator</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
 
-    <rect x="10" y="38" width="24" height="24" rx="5" fill="#FF4081" opacity="0.8" />
-    <rect x="38" y="38" width="52" height="24" rx="5" fill="url(#lp-gradient)" />
+      <div class="nav-actions">
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="btn-icon" aria-label="GitHub Profile">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+        <a href="#contact" class="btn btn-primary btn-sm">Get in Touch</a>
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle Navigation Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <rect x="10" y="66" width="52" height="24" rx="5" fill="#7C4DFF" opacity="0.9" />
-    <rect x="66" y="66" width="24" height="24" rx="5" fill="#B388FF" />
-    
-    <circle cx="98" cy="15" r="5" fill="#FF5252" filter="url(#lp-glow)" />
-  </g>
+  <!-- Hero Section -->
+  <section class="hero-section" id="hero">
+    <div class="container hero-container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="status-indicator"></span>
+          <span>Bespoke Samsung Smart TV &amp; Tizen OS Engineering</span>
+        </div>
+        <h1 class="hero-title">
+          Engineering High-Impact <br>
+          <span class="text-gradient">Living Room Experiences</span>
+        </h1>
+        <p class="hero-subtitle">
+          Specialized architecture, custom application development, and consulting for Samsung Smart TVs. Delivering fluid 60fps 10-foot UI, robust AVPlay DRM streaming, and enterprise commercial signage.
+        </p>
 
-  <!-- Typography -->
-  <g transform="translate(185, 92)">
-    <text font-family="'Inter', -apple-system, sans-serif" font-size="42" font-weight="800" fill="#FFFFFF" letter-spacing="-0.5">
-      Living<tspan fill="url(#lp-gradient)">Pixel</tspan>
-    </text>
-    <text y="32" font-family="'Inter', sans-serif" font-size="13" font-weight="600" fill="#9A8FA8" letter-spacing="3.2">
-      CONNECTED LIVING ROOM APPS
-    </text>
-  </g>
-</svg>
+        <div class="hero-cta-group">
+          <a href="#contact" class="btn btn-primary btn-lg">
+            <span>Consult on Your TV Project</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#simulator" class="btn btn-secondary btn-lg">
+            <span>Interactive TV Preview</span>
+          </a>
+        </div>
+
+        <div class="hero-pills">
+          <div class="pill-item">
+            <span class="pill-icon">✦</span>
+            <span>Tizen 4.0 &mdash; 8.0+ Ready</span>
+          </div>
+          <div class="pill-item">
+            <span class="pill-icon">⚡</span>
+            <span>AVPlay 4K/8K HDR Hardware Accel</span>
+          </div>
+          <div class="pill-item">
+            <span class="pill-icon">🛡️</span>
+            <span>Samsung Seller Office Certification</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="tv-mockup-frame">
+          <div class="tv-screen-bezel">
+            <img src="assets/images/hero-tv.jpg" alt="LivingPixel Tizen OS Smart TV Application Interface" class="tv-screen-image" loading="eager">
+            <div class="screen-glare"></div>
+            <div class="live-tag">
+              <span class="pulse-dot"></span> Tizen Core Runtime Active
+            </div>
+          </div>
+          <div class="tv-stand"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Metrics / Trust Bar -->
+  <section class="trust-bar">
+    <div class="container trust-container">
+      <div class="stat-card">
+        <div class="stat-number">10-Foot</div>
+        <div class="stat-label">Ergonomic Spatial Navigation</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4K / HDR</div>
+        <div class="stat-label">Ultra HD &amp; Low-Latency Video</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">Zero-Leak</div>
+        <div class="stat-label">Long-Running Memory Stability</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Bespoke Architectural Engineering</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Services Section -->
+  <section class="services-section" id="services">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">ENGINEERING CAPABILITIES</div>
+        <h2 class="section-title">Specialized Solutions for <span class="text-gradient">Samsung Smart TV</span></h2>
+        <p class="section-description">
+          Whether you are launching an international streaming service, converting an existing web portal to TV, or deploying commercial signage, LivingPixel delivers bespoke excellence.
+        </p>
+      </div>
+
+      <div class="services-grid">
+        <!-- Service 1 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
+          </div>
+          <h3 class="service-title">OTT &amp; Video Streaming Applications</h3>
+          <p class="service-text">
+            Bespoke media playback engines leveraging Samsung AVPlay, Shaka Player, and HLS.js. Integrated with Widevine Modular &amp; PlayReady DRM, multi-audio tracks, closed captions, and seamless live EPG rails.
+          </p>
+          <ul class="service-features">
+            <li>AVPlay Hardware Decoding &amp; 4K 60fps</li>
+            <li>DRM Protection (PlayReady &amp; Widevine)</li>
+            <li>DVR, Time-shift &amp; Live Stream Scrubbing</li>
+          </ul>
+        </div>
+
+        <!-- Service 2 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          </div>
+          <h3 class="service-title">Smart Signage &amp; Hospitality TV</h3>
+          <p class="service-text">
+            Commercial-grade applications built for 24/7 continuous operation on Samsung Smart Signage Displays (SSSP) and hospitality TVs. Offline caching, remote sync, and telemetry logging.
+          </p>
+          <ul class="service-features">
+            <li>24/7 High-Reliability Zero-Crash Daemon</li>
+            <li>Centralized Remote Fleet Provisioning</li>
+            <li>Portrait &amp; Landscape Dual Orientation</li>
+          </ul>
+        </div>
+
+        <!-- Service 3 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+          </div>
+          <h3 class="service-title">Cross-Platform Web-to-Tizen Migration</h3>
+          <p class="service-text">
+            Port your React, Vue, or HTML5 streaming portal into an official Samsung Tizen WebApp (.wgt) package optimized for D-pad spatial remote navigation and memory limits.
+          </p>
+          <ul class="service-features">
+            <li>Spatial D-Pad &amp; Key Event Handling</li>
+            <li>Lightweight Memory Footprint</li>
+            <li>Seamless webOS &amp; Android TV Parity</li>
+          </ul>
+        </div>
+
+        <!-- Service 4 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <h3 class="service-title">Samsung Store QA &amp; Certification</h3>
+          <p class="service-text">
+            End-to-end consulting for passing rigorous Samsung Seller Office QA audits. We eliminate rejection pitfalls such as back-button loops, standby wake-up issues, and memory degradation.
+          </p>
+          <ul class="service-features">
+            <li>Pre-submission QA &amp; Defect Rectification</li>
+            <li>App Lifecycle &amp; Multitasking Handling</li>
+            <li>Samsung Certificate &amp; Author Signing</li>
+          </ul>
+        </div>
+
+        <!-- Service 5 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <h3 class="service-title">Tizen .NET &amp; Native Architecture</h3>
+          <p class="service-text">
+            High-performance C# / .NET / NUI and Native Tizen C/C++ development for computational-heavy use cases, high frame-rate interactive graphics, and custom peripheral hardware integration.
+          </p>
+          <ul class="service-features">
+            <li>Tizen .NET / C# Runtime</li>
+            <li>Direct Hardware Acceleration</li>
+            <li>Custom Device Protocol Bridges</li>
+          </ul>
+        </div>
+
+        <!-- Service 6 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <h3 class="service-title">Consulting &amp; Codebase Audits</h3>
+          <p class="service-text">
+            Got an existing Tizen application that runs sluggishly or drains memory on 2018-2022 TV chipsets? We perform deep profiling, bottleneck remediation, and modernize legacy codebases.
+          </p>
+          <ul class="service-features">
+            <li>SDB Heap Profiling &amp; Leak Tracing</li>
+            <li>Startup Time Latency Reduction</li>
+            <li>Legacy Tizen OS Compatibility Fixes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Virtual TV Remote & 10-Foot Simulator -->
+  <section class="simulator-section" id="simulator">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">INTERACTIVE EXPERIENCE</div>
+        <h2 class="section-title">Test the <span class="text-gradient">10-Foot Spatial Engine</span></h2>
+        <p class="section-description">
+          Smart TV users navigate using handheld remotes. Use the interactive Samsung Remote on the right to navigate our live TV app preview on the screen!
+        </p>
+      </div>
+
+      <div class="simulator-wrapper">
+        <!-- Virtual TV Screen -->
+        <div class="sim-tv">
+          <div class="sim-tv-bezel">
+            <div class="sim-screen" id="simScreen">
+              <!-- TV Top Bar -->
+              <div class="sim-tv-topbar">
+                <div class="sim-brand">LIVINGPIXEL <span>TV ENGINE</span></div>
+                <div class="sim-clock" id="simClock">12:00 PM</div>
+              </div>
+
+              <!-- Main TV Banner -->
+              <div class="sim-hero-banner" id="simBanner">
+                <div class="sim-banner-badge" id="simBadge">FEATURED EXPERIENCE</div>
+                <h3 class="sim-banner-title" id="simTitle">Aether Drift: 4K HDR</h3>
+                <p class="sim-banner-desc" id="simDesc">AVPlay Hardware Decoded Ultra-HD stream with 5.1 surround sound.</p>
+                <div class="sim-banner-stats">
+                  <span>4K UHD</span>
+                  <span>HDR10+</span>
+                  <span>Tizen 8.0</span>
+                </div>
+              </div>
+
+              <!-- Carousel Rails -->
+              <div class="sim-rails">
+                <div class="sim-rail-title">Interactive Navigation Showcase</div>
+                <div class="sim-cards-row" id="simCardsRow">
+                  <div class="sim-card active" data-index="0" data-title="Aether Drift: 4K HDR" data-desc="AVPlay Hardware Decoded Ultra-HD stream with 5.1 surround sound." data-badge="FEATURED EXPERIENCE">
+                    <div class="sim-card-tag">OTT MEDIA</div>
+                    <div class="sim-card-name">Aether Drift</div>
+                    <div class="sim-card-sub">Ultra HD Playback</div>
+                  </div>
+
+                  <div class="sim-card" data-index="1" data-title="Hospitality Hub &amp; Signage" data-desc="Corporate concierge, flight schedules, and weather telemetry running on Samsung SSSP." data-badge="ENTERPRISE">
+                    <div class="sim-card-tag">SIGNAGE</div>
+                    <div class="sim-card-name">The Plaza Hub</div>
+                    <div class="sim-card-sub">24/7 Autonomous</div>
+                  </div>
+
+                  <div class="sim-card" data-index="2" data-title="FitWell Interactive TV" data-desc="Real-time biometric telemetry, rep counter, and interactive coach with low latency." data-badge="WELLNESS">
+                    <div class="sim-card-tag">FITNESS</div>
+                    <div class="sim-card-name">FitWell Live</div>
+                    <div class="sim-card-sub">Biometric Sync</div>
+                  </div>
+
+                  <div class="sim-card" data-index="3" data-title="Cloud Gaming &amp; Arcade" data-desc="Low-latency gamepad input processing and smooth frame rendering for Tizen OS." data-badge="ENTERTAINMENT">
+                    <div class="sim-card-tag">GAMING</div>
+                    <div class="sim-card-name">RetroCade TV</div>
+                    <div class="sim-card-sub">Gamepad Ready</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sim-status-bar">
+                <span>Current Focus: <strong id="simFocusLabel">Card 1 (Aether Drift)</strong></span>
+                <span class="sim-hint">Use remote D-Pad or Arrow Keys</span>
+              </div>
+            </div>
+          </div>
+          <div class="sim-stand"></div>
+        </div>
+
+        <!-- Virtual Samsung Smart Remote -->
+        <div class="sim-remote">
+          <div class="remote-body">
+            <div class="remote-top">
+              <div class="remote-mic"></div>
+              <button class="remote-power" id="remotePowerBtn" title="Toggle Power" aria-label="Power Button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+              </button>
+            </div>
+
+            <!-- D-Pad -->
+            <div class="dpad-container">
+              <button class="dpad-btn dpad-up" id="dpadUp" aria-label="D-Pad Up">▲</button>
+              <button class="dpad-btn dpad-left" id="dpadLeft" aria-label="D-Pad Left">◀</button>
+              <button class="dpad-btn dpad-ok" id="dpadOk" aria-label="D-Pad Select / OK">OK</button>
+              <button class="dpad-btn dpad-right" id="dpadRight" aria-label="D-Pad Right">▶</button>
+              <button class="dpad-btn dpad-down" id="dpadDown" aria-label="D-Pad Down">▼</button>
+            </div>
+
+            <!-- Function Buttons -->
+            <div class="remote-nav-row">
+              <button class="remote-util-btn" id="remoteBack" title="Back Button" aria-label="Back">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Back</span>
+              </button>
+              <button class="remote-util-btn" id="remoteHome" title="Smart Hub Home" aria-label="Home">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span>Home</span>
+              </button>
+              <button class="remote-util-btn" id="remotePlay" title="Play / Pause" aria-label="Play Pause">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Play</span>
+              </button>
+            </div>
+
+            <div class="remote-brand">SAMSUNG TIZEN</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase / Portfolio Section -->
+  <section class="showcase-section" id="showcase">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">ENGINEERING HIGHLIGHTS</div>
+        <h2 class="section-title">Production-Grade <span class="text-gradient">Case Architecture</span></h2>
+        <p class="section-description">
+          A glimpse into the class of Samsung Tizen OS applications designed and built by LivingPixel.
+        </p>
+      </div>
+
+      <div class="showcase-cards">
+        <!-- Showcase 1 -->
+        <div class="showcase-card">
+          <div class="showcase-image-wrap">
+            <img src="assets/images/hero-tv.jpg" alt="LivingPixel 4K OTT TV Streaming Platform" class="showcase-image" loading="lazy">
+            <div class="showcase-overlay">
+              <span class="showcase-tag">OTT &amp; VOD</span>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <div class="showcase-meta">
+              <span class="badge-tech">AVPlay</span>
+              <span class="badge-tech">Widevine DRM</span>
+              <span class="badge-tech">4K HDR</span>
+            </div>
+            <h3 class="showcase-title">Aether Drift: 4K Premium Streaming</h3>
+            <p class="showcase-text">
+              High-concurrency video-on-demand platform engineered specifically for Samsung Tizen OS. Features custom Shaka/AVPlay integration, multi-channel Dolby Atmos audio routing, dynamic subtitle rendering, and millisecond buffer recovery.
+            </p>
+            <div class="showcase-specs">
+              <div class="spec-item"><strong>Target OS:</strong> Tizen 4.0 – 8.0+</div>
+              <div class="spec-item"><strong>FPS Target:</strong> Stable 60 FPS UI</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Showcase 2 -->
+        <div class="showcase-card">
+          <div class="showcase-image-wrap">
+            <img src="assets/images/signage-tv.jpg" alt="Samsung SSSP Commercial Smart Signage Application" class="showcase-image" loading="lazy">
+            <div class="showcase-overlay">
+              <span class="showcase-tag">Enterprise &amp; SSSP</span>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <div class="showcase-meta">
+              <span class="badge-tech">Samsung SSSP</span>
+              <span class="badge-tech">Offline Cache</span>
+              <span class="badge-tech">24/7 Daemons</span>
+            </div>
+            <h3 class="showcase-title">The Plaza: Enterprise Signage Hub</h3>
+            <p class="showcase-text">
+              Commercial hospitality and flight monitoring signage engineered for Samsung Smart Signage Displays. Built with hardened background recovery, automated power-cycle reboot survival, and secure encrypted telemetry sync.
+            </p>
+            <div class="showcase-specs">
+              <div class="spec-item"><strong>Uptime:</strong> 99.99% Continuous</div>
+              <div class="spec-item"><strong>Hardware:</strong> SSSP 6 / 7 / 10</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Showcase 3 -->
+        <div class="showcase-card">
+          <div class="showcase-image-wrap">
+            <img src="assets/images/interactive-tv.jpg" alt="Interactive Biometric Fitness and Wellness TV App" class="showcase-image" loading="lazy">
+            <div class="showcase-overlay">
+              <span class="showcase-tag">Interactive TV</span>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <div class="showcase-meta">
+              <span class="badge-tech">Tizen .NET / NUI</span>
+              <span class="badge-tech">Real-time Telemetry</span>
+              <span class="badge-tech">SmartThings Bridge</span>
+            </div>
+            <h3 class="showcase-title">FitWell TV: Real-Time Interactive Coach</h3>
+            <p class="showcase-text">
+              Next-generation wellness app delivering synchronized biometric monitoring, live rep telemetry, and interactive video trainer streaming directly on the living room screen with zero latency.
+            </p>
+            <div class="showcase-specs">
+              <div class="spec-item"><strong>Latency:</strong> &lt; 50ms Telemetry</div>
+              <div class="spec-item"><strong>Framework:</strong> Tizen NUI &amp; C#</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Depth / Architecture Stack -->
+  <section class="stack-section" id="stack">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">ENGINEERING FOUNDATION</div>
+        <h2 class="section-title">The Tizen OS <span class="text-gradient">Technology Stack</span></h2>
+        <p class="section-description">
+          We leverage the full depth of the Samsung TV SDK and platform APIs, avoiding bulky generic libraries to maximize TV processor efficiency.
+        </p>
+      </div>
+
+      <div class="stack-grid">
+        <div class="stack-box">
+          <div class="stack-category">Core Platforms</div>
+          <ul class="stack-list">
+            <li><strong>Tizen WebApp (.wgt):</strong> W3C HTML5/CSS3/ES2022+ with zero browser overhead</li>
+            <li><strong>Tizen .NET (.tpk):</strong> C# with high-performance Samsung NUI framework</li>
+            <li><strong>Samsung SSSP:</strong> Smart Signage Platform 6, 7, and 10+</li>
+            <li><strong>TV Profiles:</strong> Full support for 2018 (Tizen 4.0) through 2026 (Tizen 8.0+) models</li>
+          </ul>
+        </div>
+
+        <div class="stack-box">
+          <div class="stack-category">Media &amp; Streaming</div>
+          <ul class="stack-list">
+            <li><strong>Samsung AVPlay API:</strong> Low-level hardware video decoding</li>
+            <li><strong>DRM Implementations:</strong> Microsoft PlayReady, Google Widevine Modular</li>
+            <li><strong>Protocols:</strong> HLS (m3u8), MPEG-DASH (mpd), SmoothStreaming, Low-Latency WebRTC</li>
+            <li><strong>Audio Architecture:</strong> Dolby Digital Plus, Dolby Atmos, Multichannel PCM</li>
+          </ul>
+        </div>
+
+        <div class="stack-box">
+          <div class="stack-category">10-Foot TV Ergonomics</div>
+          <ul class="stack-list">
+            <li><strong>Spatial Navigation:</strong> Pure deterministic focus management with memory retention</li>
+            <li><strong>Key Event Matrix:</strong> Return/Back key compliance, TV Channel Up/Down, Media Keys</li>
+            <li><strong>Dynamic Viewport:</strong> Resolution scaling from Full HD (1080p) to 4K UHD &amp; 8K</li>
+            <li><strong>Smart Hub Integration:</strong> Preview tiles, deep linking, and Samsung voice controls</li>
+          </ul>
+        </div>
+
+        <div class="stack-box">
+          <div class="stack-category">Tooling &amp; Quality</div>
+          <ul class="stack-list">
+            <li><strong>Diagnostics:</strong> SDB bridge, remote dlog analysis, web inspector CDP</li>
+            <li><strong>Profiling:</strong> Memory leak isolation, canvas performance, JS heap benchmarking</li>
+            <li><strong>Compliance:</strong> Samsung Seller Office QA checklist, Samsung CA signing profiles</li>
+            <li><strong>Automated Testing:</strong> Playwright connectOverCDP automated TV UI testing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Project Scope & Timeline Estimator -->
+  <section class="estimator-section" id="estimator">
+    <div class="container">
+      <div class="estimator-card">
+        <div class="estimator-header">
+          <div class="section-tag">INSTANT SCOPING</div>
+          <h2 class="estimator-title">Project Scope &amp; Timeline Calculator</h2>
+          <p class="estimator-desc">
+            Select your project requirements to calculate estimated engineering milestones and generate a tailored inquiry brief.
+          </p>
+        </div>
+
+        <div class="estimator-grid">
+          <!-- Controls -->
+          <div class="estimator-controls">
+            <!-- Project Type -->
+            <div class="control-group">
+              <label class="control-label">1. Select Application Type</label>
+              <div class="options-pills" id="appTypeOptions">
+                <button type="button" class="pill-select active" data-type="ott" data-weeks="4">OTT / Video Streaming</button>
+                <button type="button" class="pill-select" data-type="signage" data-weeks="3">Commercial Signage (SSSP)</button>
+                <button type="button" class="pill-select" data-type="port" data-weeks="2">Web-to-Tizen Migration</button>
+                <button type="button" class="pill-select" data-type="audit" data-weeks="1">QA Certification &amp; Audit</button>
+              </div>
+            </div>
+
+            <!-- Features -->
+            <div class="control-group">
+              <label class="control-label">2. Required Capabilities (Select multiple)</label>
+              <div class="checkbox-pills">
+                <label class="checkbox-pill">
+                  <input type="checkbox" class="feature-check" value="drm" data-weeks="1" checked>
+                  <span>PlayReady / Widevine DRM (+1 wk)</span>
+                </label>
+                <label class="checkbox-pill">
+                  <input type="checkbox" class="feature-check" value="epg" data-weeks="1" checked>
+                  <span>Live TV EPG &amp; Channel Guide (+1 wk)</span>
+                </label>
+                <label class="checkbox-pill">
+                  <input type="checkbox" class="feature-check" value="offline" data-weeks="1">
+                  <span>Offline Caching &amp; Auto-Reboot (+1 wk)</span>
+                </label>
+                <label class="checkbox-pill">
+                  <input type="checkbox" class="feature-check" value="billing" data-weeks="1">
+                  <span>Samsung Checkout / In-App Purchase (+1 wk)</span>
+                </label>
+                <label class="checkbox-pill">
+                  <input type="checkbox" class="feature-check" value="legacy" data-weeks="1">
+                  <span>Backporting to Legacy 2018-2020 TV Models (+1 wk)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Target Turnaround -->
+            <div class="control-group">
+              <label class="control-label">3. Desired Delivery Pace</label>
+              <div class="options-pills" id="paceOptions">
+                <button type="button" class="pill-select active" data-pace="standard">Standard Sprint Pace</button>
+                <button type="button" class="pill-select" data-pace="expedited">Expedited Priority Delivery</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Output Summary -->
+          <div class="estimator-result">
+            <div class="result-box">
+              <div class="result-header">Estimated Engineering Window</div>
+              <div class="result-number" id="estimatedWeeks">6 &ndash; 7 Weeks</div>
+              <div class="result-caption" id="estimatedSprintText">Comprehensive turnkey architecture, testing, and certification readiness.</div>
+
+              <div class="result-breakdown">
+                <div class="breakdown-row">
+                  <span>Phase 1: Architecture &amp; 10-Foot UX</span>
+                  <strong id="phase1Time">1.5 Wks</strong>
+                </div>
+                <div class="breakdown-row">
+                  <span>Phase 2: Core Media/Feature Build</span>
+                  <strong id="phase2Time">3.5 Wks</strong>
+                </div>
+                <div class="breakdown-row">
+                  <span>Phase 3: SDB QA &amp; Seller Certification</span>
+                  <strong id="phase3Time">1.5 Wks</strong>
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-primary btn-block" id="applyEstimatorBtn">
+                Apply to Consultation Request &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact & Consultation Section -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="contact-wrapper">
+        <div class="contact-info">
+          <div class="section-tag">LET'S BUILD TOGETHER</div>
+          <h2 class="contact-title">Commission Your <br><span class="text-gradient">Samsung TV Application</span></h2>
+          <p class="contact-text">
+            Have a project in mind, need a quote for bespoke TV engineering, or looking for an expert audit on an existing Tizen application? Connect directly with the lead engineer.
+          </p>
+
+          <div class="contact-cards">
+            <!-- Email Card -->
+            <div class="contact-item">
+              <div class="contact-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </div>
+              <div class="contact-details">
+                <span class="contact-label">Direct Engineering Inquiries</span>
+                <a href="mailto:lubos.kostros@cadline.co.uk" class="contact-value" id="emailLink">lubos.kostros@cadline.co.uk</a>
+              </div>
+              <button class="btn-copy" id="copyEmailBtn" title="Copy Email to Clipboard" aria-label="Copy Email">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
+
+            <!-- GitHub Card -->
+            <div class="contact-item">
+              <div class="contact-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              </div>
+              <div class="contact-details">
+                <span class="contact-label">GitHub Source &amp; Architecture</span>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="contact-value">github.com/livingpixel</a>
+              </div>
+            </div>
+
+            <!-- Focus Card -->
+            <div class="contact-item">
+              <div class="contact-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              </div>
+              <div class="contact-details">
+                <span class="contact-label">Engagement Model</span>
+                <span class="contact-value">Bespoke Consulting &amp; Custom Contracts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="contact-form-wrap">
+          <form class="contact-form" id="projectForm">
+            <h3 class="form-title">Request a Consultation</h3>
+            <p class="form-sub">We reply within 24 hours with an architectural breakdown.</p>
+
+            <div class="form-group">
+              <label for="userName">Your Name / Company</label>
+              <input type="text" id="userName" name="name" required placeholder="e.g. Alex Morgan, MediaCorp">
+            </div>
+
+            <div class="form-group">
+              <label for="userEmail">Business Email</label>
+              <input type="email" id="userEmail" name="email" required placeholder="name@company.com">
+            </div>
+
+            <div class="form-group">
+              <label for="projectScope">Project Focus</label>
+              <select id="projectScope" name="scope">
+                <option value="OTT Video Streaming App">OTT Video Streaming App</option>
+                <option value="Commercial Digital Signage (SSSP)">Commercial Digital Signage (SSSP)</option>
+                <option value="Web-to-Tizen TV Migration">Web-to-Tizen TV Migration</option>
+                <option value="Store Certification & QA Audit">Store Certification &amp; QA Audit</option>
+                <option value="Custom Bespoke Tizen Application">Custom Bespoke Tizen Application</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="projectNotes">Project Details &amp; Objectives</label>
+              <textarea id="projectNotes" name="notes" rows="4" placeholder="Tell us about target Samsung TV years, video DRM requirements, desired delivery timelines, or current blockers..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">
+              <span>Send Consultation Request</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <div class="form-footer-hint">Direct communication. No spam, ever.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-left">
+        <a href="#hero" class="brand-logo">
+          <span class="logo-pixel"><span class="pixel-dot"></span></span>
+          <span class="logo-text">living<span class="text-gradient">pixel</span></span>
+        </a>
+        <p class="footer-tagline">
+          Bespoke Samsung Tizen OS Smart TV engineering, OTT streaming players, and commercial signage applications.
+        </p>
+      </div>
+
+      <div class="footer-links-group">
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <a href="#services">Services</a>
+          <a href="#simulator">TV Simulator</a>
+          <a href="#showcase">Showcase</a>
+          <a href="#stack">Tech Stack</a>
+          <a href="#estimator">Estimator</a>
+        </div>
+        <div class="footer-col">
+          <h4>Contact &amp; Code</h4>
+          <a href="mailto:lubos.kostros@cadline.co.uk">lubos.kostros@cadline.co.uk</a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
+          <a href="#contact">Consultation Form</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container bottom-container">
+        <p>&copy; 2026 LivingPixel. All rights reserved. Engineered by Lubos Kostros.</p>
+        <p class="disclaimer">Samsung, Tizen, and Smart Hub are registered trademarks of Samsung Electronics Co., Ltd.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast" role="alert" aria-live="polite">
+    <span class="toast-icon">✓</span>
+    <span class="toast-msg" id="toastMsg">Email copied to clipboard!</span>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

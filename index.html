@@ -1,10 +1,48 @@
 <!DOCTYPE html>
 <html><head>
-  <meta http-equiv="refresh"
-   content="0; url=https://dl.dropboxusercontent.com/u/16220179/Math/index.html">
+  <!--<meta http-equiv="refresh"
+   content="0; url=https://dl.dropboxusercontent.com/u/16220179/Math/index.html">-->
 </head>
 <body>
-<h1>Hello World just now</h1>
-<p>I'm hosted with GitHub Pages.</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 180" width="100%" height="180">
+  <defs>
+    <linearGradient id="lp-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5252" />
+      <stop offset="50%" stop-color="#FF4081" />
+      <stop offset="100%" stop-color="#7C4DFF" />
+    </linearGradient>
+    <filter id="lp-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="680" height="180" rx="16" fill="#0D0B18" />
+
+  <!-- Logo Mark -->
+  <g transform="translate(50, 38)">
+    <rect x="10" y="10" width="24" height="24" rx="5" fill="#FF5252" opacity="0.9" />
+    <rect x="38" y="10" width="24" height="24" rx="5" fill="#FF4081" />
+    <rect x="66" y="10" width="24" height="24" rx="5" fill="#7C4DFF" filter="url(#lp-glow)" />
+
+    <rect x="10" y="38" width="24" height="24" rx="5" fill="#FF4081" opacity="0.8" />
+    <rect x="38" y="38" width="52" height="24" rx="5" fill="url(#lp-gradient)" />
+
+    <rect x="10" y="66" width="52" height="24" rx="5" fill="#7C4DFF" opacity="0.9" />
+    <rect x="66" y="66" width="24" height="24" rx="5" fill="#B388FF" />
+    
+    <circle cx="98" cy="15" r="5" fill="#FF5252" filter="url(#lp-glow)" />
+  </g>
+
+  <!-- Typography -->
+  <g transform="translate(185, 92)">
+    <text font-family="'Inter', -apple-system, sans-serif" font-size="42" font-weight="800" fill="#FFFFFF" letter-spacing="-0.5">
+      Living<tspan fill="url(#lp-gradient)">Pixel</tspan>
+    </text>
+    <text y="32" font-family="'Inter', sans-serif" font-size="13" font-weight="600" fill="#9A8FA8" letter-spacing="3.2">
+      CONNECTED LIVING ROOM APPS
+    </text>
+  </g>
+</svg>
 </body>
 </html>

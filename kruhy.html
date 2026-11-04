@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Circles in Rectangle Puzzle - Free Floating & Optimal Space Filling</title>
+  <style>
+    :root {
+      --bg-page: #d7ede0;
+      --bg-canvas: #e8f6ed;
+      --panel-bg: rgba(255, 255, 255, 0.92);
+      --panel-border: rgba(0, 0, 0, 0.08);
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent-red: #e11d48;
+      --circle-blue: #60b5f8;
+      --circle-border: #18181b;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --green-fill: #059669;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      overflow-x: hidden;
+      overflow-y: auto;
+      width: 100vw;
+      min-height: 100vh;
+    }
+
+    /* Top Sticky Navigation Bar */
+    #navbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 28px;
+      z-index: 1000;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo-icon {
+      width: 22px;
+      height: 22px;
+      background: var(--circle-blue);
+      border: 2.5px solid var(--circle-border);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-pill {
+      text-decoration: none;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s ease;
+    }
+
+    .nav-pill:hover, .nav-pill.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary-dark);
+    }
+
+    /* Section Wrapper */
+    .section-wrapper {
+      max-width: 1560px;
+      margin: 24px auto 44px auto;
+      padding: 0 20px;
+    }
+
+    .section-header {
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-p1 {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .badge-p2 {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* Workbench Container */
+    .workbench-card {
+      position: relative;
+      width: 100%;
+      height: 660px;
+      background: var(--bg-canvas);
+      border-radius: 22px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .canvas-viewport {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      touch-action: none;
+      cursor: default;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      pointer-events: auto;
+    }
+
+    /* Top Left Overlay Card */
+    .overlay-info {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      padding: 16px 20px;
+      max-width: 380px;
+      z-index: 10;
+    }
+
+    .overlay-info h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .overlay-info p {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      line-height: 1.42;
+    }
+
+    .drag-instruction {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 7px 12px;
+      background: rgba(225, 29, 72, 0.08);
+      border: 1px solid rgba(225, 29, 72, 0.2);
+      border-radius: 8px;
+      font-size: 0.79rem;
+      font-weight: 600;
+      color: var(--accent-red);
+    }
+
+    .pulsing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-red);
+      border-radius: 50%;
+      box-shadow: 0 0 0 rgba(225, 29, 72, 0.6);
+      animation: pulse 1.6s infinite ease-out;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+    }
+
+    .free-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Right Sidebar */
+    .workbench-sidebar {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 326px;
+      padding: 18px;
+      z-index: 10;
+      max-height: calc(100% - 36px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .workbench-sidebar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .workbench-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+
+    /* Fill Mode Pill Bar */
+    .fill-mode-selector {
+      display: flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 10px;
+      gap: 4px;
+    }
+
+    .fill-mode-btn {
+      flex: 1;
+      padding: 7px 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .fill-mode-btn.active {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .stat-card.highlight {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%);
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .stat-val {
+      font-size: 1.18rem;
+      font-weight: 800;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+
+    .stat-val.blue { color: var(--primary); }
+    .stat-val.green { color: var(--green-fill); }
+    .stat-val.red { color: var(--accent-red); }
+
+    /* Space Fill Progress Meter */
+    .fill-meter-block {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fill-meter-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .fill-meter-track {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .fill-meter-bar {
+      height: 100%;
+      width: 65%;
+      background: linear-gradient(90deg, #2563eb, #059669);
+      border-radius: 4px;
+      transition: width 0.2s ease;
+    }
+
+    /* Slider Block */
+    .slider-block {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .slider-header span.val {
+      font-weight: 700;
+      color: var(--text-main);
+      font-family: ui-monospace, monospace;
+    }
+
+    input[type=range] {
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: #cbd5e1;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Buttons */
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    button {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      padding: 6px 8px;
+      font-size: 0.77rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    button:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      color: var(--text-main);
+    }
+
+    .action-btn-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-btn {
+      flex: 1;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      font-weight: 700;
+      padding: 7px;
+    }
+
+    .action-btn:hover {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #14532d;
+    }
+
+    /* Math Formula Box */
+    .math-accordion {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+
+    .math-title {
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .code-chip {
+      background: #e2e8f0;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-family: ui-monospace, Menlo, Monaco, monospace;
+      font-size: 0.74rem;
+    }
+
+    .formula-final {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #e2e8f0;
+      font-weight: 700;
+    }
+
+    /* View Toggle Bar (Bottom Center) */
+    .bottom-toggle-bar {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+      padding: 4px;
+      z-index: 10;
+    }
+
+    .view-btn {
+      padding: 6px 14px;
+      border-radius: 18px;
+      border: none;
+      background: transparent;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .view-btn.active {
+      background: var(--text-main);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Tooltip */
+    .drag-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.94);
+      color: #ffffff;
+      padding: 5px 9px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      transform: translate(15px, -30px);
+      display: none;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px 0 48px 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <div id="navbar">
+    <div class="nav-title">
+      <span class="nav-logo-icon"></span>
+      <span>Circles in Rectangle Space-Filling Simulator</span>
+    </div>
+    <div class="nav-links">
+      <a href="#section-2circles" class="nav-pill active">2 Circles</a>
+      <a href="#section-3circles" class="nav-pill">3 Circles</a>
+    </div>
+  </div>
+
+  <!-- SECTION 1: 2 Circles -->
+  <div id="section-2circles" class="section-wrapper">
+    <div class="section-header">
+      <h2>
+        <span class="section-badge badge-p1">Simulator 1</span>
+        Two Circles Filling the Rectangle
+      </h2>
+      <span style="font-size:0.85rem; color:var(--text-muted);">Free floating physics &amp; optimal space packing</span>
+    </div>
+
+    <div class="workbench-card">
+      <div id="canvas-container-1" class="canvas-viewport">
+        <div id="tooltip-1" class="drag-tooltip">Drag Corner</div>
+
+        <!-- Overlay Header -->
+        <div class="overlay-info glass-card">
+          <h3>Two Congruent Circles</h3>
+          <p>
+            Circles freely float, collide, and expand to fill the rectangle. Drag the <strong>top-right red corner</strong> to resize the box, or <strong>click &amp; drag the circles</strong> directly!
+          </p>
+          <div class="drag-instruction">
+            <span class="pulsing-dot"></span>
+            <span>Drag <strong>top-right corner</strong> to expand / contract space!</span>
+          </div>
+          <div class="free-hint">
+            <span>💡 <strong>Tip:</strong> You can drag individual circles around freely.</span>
+          </div>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="bottom-toggle-bar glass-card">
+          <button id="p1-btn-2d" class="view-btn active" onclick="sim1.setViewMode('2d')">2D Blueprint</button>
+          <button id="p1-btn-3d" class="view-btn" onclick="sim1.setViewMode('3d')">3D Extruded</button>
+        </div>
+
+        <!-- Sidebar Metrics & Controls -->
+        <div class="workbench-sidebar glass-card">
+          <!-- Fill Mode Pill Selector -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Behavior Mode</span>
+            </div>
+            <div class="fill-mode-selector">
+              <button id="p1-mode-free" class="fill-mode-btn active" onclick="sim1.setFillMode('free')">🎈 Float Freely (Max Fill)</button>
+              <button id="p1-mode-puzzle" class="fill-mode-btn" onclick="sim1.setFillMode('puzzle')">📐 Puzzle Tangent</button>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Rectangle Width (W)</span>
+            <span id="p1-txt-w" class="stat-val red">10.00 cm</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Rectangle Height (H)</span>
+            <span id="p1-txt-h" class="stat-val red">6.00 cm</span>
+          </div>
+          <div class="stat-card highlight">
+            <span class="stat-label">Circle Diameter (D = 2r)</span>
+            <span id="p1-txt-d" class="stat-val green">5.05 cm</span>
+          </div>
+          <div class="stat-card highlight">
+            <span class="stat-label">Circle Radius (r)</span>
+            <span id="p1-txt-r" class="stat-val blue">2.52 cm</span>
+          </div>
+
+          <!-- Space Fill Progress Meter -->
+          <div class="fill-meter-block">
+            <div class="fill-meter-header">
+              <span>Area Fill Efficiency</span>
+              <span id="p1-txt-fill" style="color:#059669; font-weight:800;">66.7%</span>
+            </div>
+            <div class="fill-meter-track">
+              <div id="p1-fill-bar" class="fill-meter-bar" style="width: 66.7%;"></div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="action-btn-row">
+            <button class="action-btn" onclick="sim1.nudgeAndFloat()">🌊 Stir / Float Circles</button>
+            <button class="action-btn" onclick="sim1.maximizeFill()">⚡ Maximize Fill</button>
+          </div>
+
+          <!-- Sliders -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Width (W)</span>
+              <span id="p1-slider-w-val" class="val">10.0 cm</span>
+            </div>
+            <input type="range" id="p1-slider-w" min="4.0" max="22.0" step="0.1" value="10.0">
+          </div>
+
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Height (H)</span>
+              <span id="p1-slider-h-val" class="val">6.0 cm</span>
+            </div>
+            <input type="range" id="p1-slider-h" min="3.0" max="15.0" step="0.1" value="6.0">
+          </div>
+
+          <!-- Presets -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Quick Presets</span>
+            </div>
+            <div class="button-grid">
+              <button onclick="sim1.setDims(10.0, 6.0)">Original (10×6)</button>
+              <button onclick="sim1.setDims(8.0, 8.0)">Square (8×8)</button>
+              <button onclick="sim1.setDims(14.0, 6.0)">Wide Ratio (14×6)</button>
+              <button onclick="sim1.setDims(6.0, 12.0)">Tall Ratio (6×12)</button>
+            </div>
+          </div>
+
+          <!-- Math Box -->
+          <div class="math-accordion">
+            <div class="math-title">
+              <span>📐 Space-Filling Formula</span>
+            </div>
+            <div>
+              When <span class="code-chip">W ≥ 2H</span>, circles fill width: <span class="code-chip">D = H</span><br>
+              When <span class="code-chip">H ≥ 2W</span>, circles fill height: <span class="code-chip">D = W</span><br>
+              In diagonal pack: <span class="code-chip">D = (W+H) - √(2WH)</span>
+            </div>
+            <div class="formula-final">
+              Current Mode: <span id="p1-math-mode" style="color:#059669;">Free Floating Maximal Fill</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: 3 Circles -->
+  <div id="section-3circles" class="section-wrapper">
+    <div class="section-header">
+      <h2>
+        <span class="section-badge badge-p2">Simulator 2</span>
+        Three Circles Filling the Rectangle
+      </h2>
+      <span style="font-size:0.85rem; color:var(--text-muted);">Free floating physics &amp; dynamic space packing</span>
+    </div>
+
+    <div class="workbench-card">
+      <div id="canvas-container-2" class="canvas-viewport">
+        <div id="tooltip-2" class="drag-tooltip">Drag Corner</div>
+
+        <!-- Overlay Header -->
+        <div class="overlay-info glass-card">
+          <h3>Three Congruent Circles</h3>
+          <p>
+            Three identical circles freely float and expand to maximally fill the available space. Drag the <strong>top-right corner handle</strong> to reshape the rectangle, or <strong>drag circles directly</strong>!
+          </p>
+          <div class="drag-instruction">
+            <span class="pulsing-dot"></span>
+            <span>Drag <strong>top-right corner</strong> to resize Width &amp; Height!</span>
+          </div>
+          <div class="free-hint">
+            <span>💡 <strong>Tip:</strong> Drag circles with mouse or touch to reposition them.</span>
+          </div>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="bottom-toggle-bar glass-card">
+          <button id="p2-btn-2d" class="view-btn active" onclick="sim2.setViewMode('2d')">2D Blueprint</button>
+          <button id="p2-btn-3d" class="view-btn" onclick="sim2.setViewMode('3d')">3D Extruded</button>
+        </div>
+
+        <!-- Sidebar Metrics & Controls -->
+        <div class="workbench-sidebar glass-card">
+          <!-- Fill Mode Pill Selector -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Behavior Mode</span>
+            </div>
+            <div class="fill-mode-selector">
+              <button id="p2-mode-free" class="fill-mode-btn active" onclick="sim2.setFillMode('free')">🎈 Float Freely (Max Fill)</button>
+              <button id="p2-mode-puzzle" class="fill-mode-btn" onclick="sim2.setFillMode('puzzle')">📐 Diagonal Chain</button>
+              <button id="p2-mode-tri" class="fill-mode-btn" onclick="sim2.setFillMode('triangular')">🔺 Triangular</button>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Rectangle Width (W)</span>
+            <span id="p2-txt-w" class="stat-val red">10.00 cm</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Rectangle Height (H)</span>
+            <span id="p2-txt-h" class="stat-val red">6.00 cm</span>
+          </div>
+          <div class="stat-card highlight">
+            <span class="stat-label">Circle Diameter (D = 2r)</span>
+            <span id="p2-txt-d" class="stat-val green">3.80 cm</span>
+          </div>
+          <div class="stat-card highlight">
+            <span class="stat-label">Circle Radius (r)</span>
+            <span id="p2-txt-r" class="stat-val blue">1.90 cm</span>
+          </div>
+
+          <!-- Space Fill Progress Meter -->
+          <div class="fill-meter-block">
+            <div class="fill-meter-header">
+              <span>Area Fill Efficiency</span>
+              <span id="p2-txt-fill" style="color:#059669; font-weight:800;">56.7%</span>
+            </div>
+            <div class="fill-meter-track">
+              <div id="p2-fill-bar" class="fill-meter-bar" style="width: 56.7%;"></div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="action-btn-row">
+            <button class="action-btn" onclick="sim2.nudgeAndFloat()">🌊 Stir / Float Circles</button>
+            <button class="action-btn" onclick="sim2.maximizeFill()">⚡ Maximize Fill</button>
+          </div>
+
+          <!-- Sliders -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Width (W)</span>
+              <span id="p2-slider-w-val" class="val">10.0 cm</span>
+            </div>
+            <input type="range" id="p2-slider-w" min="5.0" max="24.0" step="0.1" value="10.0">
+          </div>
+
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Height (H)</span>
+              <span id="p2-slider-h-val" class="val">6.0 cm</span>
+            </div>
+            <input type="range" id="p2-slider-h" min="3.0" max="16.0" step="0.1" value="6.0">
+          </div>
+
+          <!-- Presets -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span>Quick Presets</span>
+            </div>
+            <div class="button-grid">
+              <button onclick="sim2.setDims(10.0, 6.0)">Original (10×6)</button>
+              <button onclick="sim2.setDims(15.0, 5.0)">Triple Row (15×5)</button>
+              <button onclick="sim2.setDims(9.0, 9.0)">Square (9×9)</button>
+              <button onclick="sim2.setDims(14.0, 8.0)">Wide Box (14×8)</button>
+            </div>
+          </div>
+
+          <!-- Math Box -->
+          <div class="math-accordion">
+            <div class="math-title">
+              <span id="p2-math-title">📐 Optimal 3-Circle Packing</span>
+            </div>
+            <div id="p2-math-body">
+              Circles automatically select optimal arrangement to maximize diameter and area filled as $W$ and $H$ change.
+            </div>
+            <div class="formula-final">
+              Current Mode: <span id="p2-math-mode" style="color:#059669;">Free Floating Maximal Fill</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Circles in Rectangle Interactive Geometry &amp; Space-Filling Lab &bull; Powered by Three.js
+  </footer>
+
+  <!-- Three.js and OrbitControls from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    // Shared crisp text canvas sprite
+    function createTextSprite(text, fontSize = 28, color = '#0f172a', fontWeight = 'bold') {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 512;
+      canvas.height = 160;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontWeight} ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = color;
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(5.5, 1.7, 1);
+      return sprite;
+    }
+
+    // =========================================================================
+    // BASE SIMULATOR CLASS (Supports Floating Physics, Corner Dragging, & Circle Dragging)
+    // =========================================================================
+    class BaseCircleSimulator {
+      constructor(containerId, tooltipId, circleCount) {
+        this.circleCount = circleCount;
+        this.W = 10.0;
+        this.H = 6.0;
+        this.D = 0.0;
+        this.r = 0.0;
+        this.fillMode = 'free'; // 'free', 'puzzle', 'triangular'
+        this.viewMode = '2d';
+
+        this.isDraggingCorner = false;
+        this.hoveredCorner = false;
+        this.draggedCircleIdx = -1;
+
+        this.container = document.getElementById(containerId);
+        this.tooltip = document.getElementById(tooltipId);
+
+        // Physics circle states: position and velocity
+        this.circleStates = [];
+        for (let i = 0; i < circleCount; i++) {
+          this.circleStates.push({
+            x: 0, y: 0,
+            vx: (Math.random() - 0.5) * 0.02,
+            vy: (Math.random() - 0.5) * 0.02
+          });
+        }
+
+        this.initThree();
+        this.initMeshes();
+        this.setupEvents();
+      }
+
+      initThree() {
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xe8f6ed);
+
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.container.appendChild(this.renderer.domElement);
+
+        const aspect = this.container.clientWidth / this.container.clientHeight;
+        const frustumSize = 17;
+        this.orthoCamera = new THREE.OrthographicCamera(
+          -frustumSize * aspect / 2, frustumSize * aspect / 2,
+          frustumSize / 2, -frustumSize / 2,
+          0.1, 1000
+        );
+        this.orthoCamera.position.set(0, 0, 50);
+        this.orthoCamera.lookAt(0, 0, 0);
+
+        this.persCamera = new THREE.PerspectiveCamera(42, aspect, 0.1, 1000);
+        this.persCamera.position.set(0, -13, 20);
+        this.persCamera.lookAt(0, 0, 0);
+
+        this.activeCamera = this.orthoCamera;
+
+        this.controls = new THREE.OrbitControls(this.persCamera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+        this.controls.enabled = false;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+        this.scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.65);
+        dirLight.position.set(15, 25, 35);
+        dirLight.castShadow = true;
+        this.scene.add(dirLight);
+
+        const backLight = new THREE.DirectionalLight(0xbbf7d0, 0.35);
+        backLight.position.set(-15, -20, 20);
+        this.scene.add(backLight);
+
+        this.puzzleGroup = new THREE.Group();
+        this.scene.add(this.puzzleGroup);
+        this.dimLinesGroup = new THREE.Group();
+        this.puzzleGroup.add(this.dimLinesGroup);
+
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+        this.planeIntersection = new THREE.Vector3();
+      }
+
+      initMeshes() {
+        const rectGeo = new THREE.PlaneGeometry(1, 1);
+        const rectMat = new THREE.MeshStandardMaterial({
+          color: 0xffffff, roughness: 0.15, metalness: 0.05,
+          transparent: true, opacity: 0.95, side: THREE.DoubleSide
+        });
+        this.rectMesh = new THREE.Mesh(rectGeo, rectMat);
+        this.rectMesh.receiveShadow = true;
+        this.puzzleGroup.add(this.rectMesh);
+
+        this.rectLine = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x18181b, linewidth: 3 }));
+        this.puzzleGroup.add(this.rectLine);
+
+        // Circles and Outlines
+        const circleGeo = new THREE.CircleGeometry(1, 64);
+        const circleMat = new THREE.MeshStandardMaterial({
+          color: 0x60b5f8, roughness: 0.25, metalness: 0.05, side: THREE.DoubleSide
+        });
+
+        this.circleMeshes = [];
+        this.circleLines = [];
+        this.radiusLines = [];
+        this.circleHitBoxes = [];
+
+        for (let i = 0; i < this.circleCount; i++) {
+          const mesh = new THREE.Mesh(circleGeo, circleMat.clone());
+          mesh.castShadow = true;
+          this.puzzleGroup.add(mesh);
+          this.circleMeshes.push(mesh);
+
+          const line = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x18181b, linewidth: 2 }));
+          this.puzzleGroup.add(line);
+          this.circleLines.push(line);
+
+          const rLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x0f172a, linewidth: 2.5 }));
+          this.puzzleGroup.add(rLine);
+          this.radiusLines.push(rLine);
+
+          // Hit box for circle dragging
+          const hit = new THREE.Mesh(circleGeo, new THREE.MeshBasicMaterial({ visible: false }));
+          this.puzzleGroup.add(hit);
+          this.circleHitBoxes.push(hit);
+        }
+
+        // Corner Handle
+        this.handleMesh = new THREE.Mesh(
+          new THREE.SphereGeometry(0.38, 32, 32),
+          new THREE.MeshStandardMaterial({ color: 0xe11d48, emissive: 0x991b1b, emissiveIntensity: 0.5, roughness: 0.2 })
+        );
+        this.puzzleGroup.add(this.handleMesh);
+
+        this.handlePulseRing = new THREE.Mesh(
+          new THREE.RingGeometry(0.45, 0.62, 32),
+          new THREE.MeshBasicMaterial({ color: 0xe11d48, transparent: true, opacity: 0.8, side: THREE.DoubleSide })
+        );
+        this.puzzleGroup.add(this.handlePulseRing);
+
+        this.handleHitBox = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 16), new THREE.MeshBasicMaterial({ visible: false }));
+        this.puzzleGroup.add(this.handleHitBox);
+      }
+
+      // Physics Relaxation and Floating Step
+      updatePhysics() {
+        const halfW = this.W / 2;
+        const halfH = this.H / 2;
+        const radius = this.r;
+
+        if (this.fillMode === 'free') {
+          // Floating force simulation
+          for (let i = 0; i < this.circleCount; i++) {
+            const c = this.circleStates[i];
+            if (this.draggedCircleIdx !== i) {
+              // Gentle organic drift
+              c.x += c.vx;
+              c.y += c.vy;
+              c.vx *= 0.96;
+              c.vy *= 0.96;
+
+              // Gentle ambient floating breeze
+              c.vx += (Math.random() - 0.5) * 0.003;
+              c.vy += (Math.random() - 0.5) * 0.003;
+            }
+
+            // Boundary collision
+            if (c.x - radius < -halfW) {
+              c.x = -halfW + radius;
+              c.vx = Math.abs(c.vx) * 0.7;
+            }
+            if (c.x + radius > halfW) {
+              c.x = halfW - radius;
+              c.vx = -Math.abs(c.vx) * 0.7;
+            }
+            if (c.y - radius < -halfH) {
+              c.y = -halfH + radius;
+              c.vy = Math.abs(c.vy) * 0.7;
+            }
+            if (c.y + radius > halfH) {
+              c.y = halfH - radius;
+              c.vy = -Math.abs(c.vy) * 0.7;
+            }
+          }
+
+          // Pairwise collision repulsion
+          for (let iter = 0; iter < 4; iter++) {
+            for (let i = 0; i < this.circleCount; i++) {
+              for (let j = i + 1; j < this.circleCount; j++) {
+                const c1 = this.circleStates[i];
+                const c2 = this.circleStates[j];
+                const dx = c2.x - c1.x;
+                const dy = c2.y - c1.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const minDist = radius * 2.0;
+
+                if (dist < minDist && dist > 0.0001) {
+                  const overlap = (minDist - dist) * 0.5;
+                  const nx = dx / dist;
+                  const ny = dy / dist;
+
+                  if (this.draggedCircleIdx !== i) {
+                    c1.x -= nx * overlap;
+                    c1.y -= ny * overlap;
+                    c1.vx -= nx * 0.01;
+                    c1.vy -= ny * 0.01;
+                  }
+                  if (this.draggedCircleIdx !== j) {
+                    c2.x += nx * overlap;
+                    c2.y += ny * overlap;
+                    c2.vx += nx * 0.01;
+                    c2.vy += ny * 0.01;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      nudgeAndFloat() {
+        for (let c of this.circleStates) {
+          c.vx = (Math.random() - 0.5) * 0.12;
+          c.vy = (Math.random() - 0.5) * 0.12;
+        }
+      }
+
+      maximizeFill() {
+        this.fillMode = 'free';
+        this.computeOptimalPacking();
+        this.updateScene();
+        this.nudgeAndFloat();
+      }
+
+      adjustZoom() {
+        if (this.viewMode === '2d') {
+          const margin = 5.5;
+          const totalW = this.W + margin;
+          const totalH = this.H + margin;
+          const aspect = this.container.clientWidth / this.container.clientHeight;
+          const neededFrustum = Math.max(totalH, totalW / aspect);
+          this.orthoCamera.left = -neededFrustum * aspect / 2;
+          this.orthoCamera.right = neededFrustum * aspect / 2;
+          this.orthoCamera.top = neededFrustum / 2;
+          this.orthoCamera.bottom = -neededFrustum / 2;
+          this.orthoCamera.updateProjectionMatrix();
+        }
+      }
+
+      setViewMode(mode) {
+        this.viewMode = mode;
+        const prefix = this.circleCount === 2 ? 'p1' : 'p2';
+        document.getElementById(`${prefix}-btn-2d`).classList.toggle('active', mode === '2d');
+        document.getElementById(`${prefix}-btn-3d`).classList.toggle('active', mode === '3d');
+
+        if (mode === '2d') {
+          this.controls.enabled = false;
+          this.activeCamera = this.orthoCamera;
+          this.puzzleGroup.rotation.set(0, 0, 0);
+        } else {
+          this.controls.enabled = true;
+          this.activeCamera = this.persCamera;
+          this.persCamera.position.set(0, -12, 18);
+          this.persCamera.lookAt(0, 0, 0);
+          this.controls.target.set(0, 0, 0);
+          this.controls.update();
+        }
+        this.updateScene();
+      }
+
+      setDims(w, h) {
+        this.W = parseFloat(w);
+        this.H = parseFloat(h);
+        this.computeOptimalPacking();
+        this.updateScene();
+      }
+
+      setupEvents() {
+        const prefix = this.circleCount === 2 ? 'p1' : 'p2';
+        document.getElementById(`${prefix}-slider-w`).addEventListener('input', (e) => {
+          this.W = parseFloat(e.target.value);
+          this.computeOptimalPacking();
+          this.updateScene();
+        });
+        document.getElementById(`${prefix}-slider-h`).addEventListener('input', (e) => {
+          this.H = parseFloat(e.target.value);
+          this.computeOptimalPacking();
+          this.updateScene();
+        });
+
+        const getPos = (e) => {
+          const rect = this.renderer.domElement.getBoundingClientRect();
+          const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+          return {
+            x: ((clientX - rect.left) / rect.width) * 2 - 1,
+            y: -((clientY - rect.top) / rect.height) * 2 + 1,
+            screenX: clientX,
+            screenY: clientY
+          };
+        };
+
+        const isCornerHit = (pos) => {
+          this.mouse.x = pos.x;
+          this.mouse.y = pos.y;
+          this.raycaster.setFromCamera(this.mouse, this.activeCamera);
+          return this.raycaster.intersectObject(this.handleHitBox).length > 0;
+        };
+
+        const getHitCircleIdx = (pos) => {
+          this.mouse.x = pos.x;
+          this.mouse.y = pos.y;
+          this.raycaster.setFromCamera(this.mouse, this.activeCamera);
+          for (let i = 0; i < this.circleCount; i++) {
+            const hits = this.raycaster.intersectObject(this.circleHitBoxes[i]);
+            if (hits.length > 0) return i;
+          }
+          return -1;
+        };
+
+        const onDown = (e) => {
+          const pos = getPos(e);
+          if (isCornerHit(pos)) {
+            this.isDraggingCorner = true;
+            this.controls.enabled = false;
+            this.container.style.cursor = 'nwse-resize';
+            return;
+          }
+
+          const hitCirc = getHitCircleIdx(pos);
+          if (hitCirc !== -1) {
+            this.draggedCircleIdx = hitCirc;
+            this.controls.enabled = false;
+            this.container.style.cursor = 'grabbing';
+            this.fillMode = 'free'; // auto-switch to free mode if user drags a circle
+            this.updateModePills();
+          }
+        };
+
+        const onMove = (e) => {
+          const pos = getPos(e);
+          this.mouse.x = pos.x;
+          this.mouse.y = pos.y;
+
+          if (!this.isDraggingCorner && this.draggedCircleIdx === -1) {
+            this.hoveredCorner = isCornerHit(pos);
+            const circHover = getHitCircleIdx(pos);
+
+            if (this.hoveredCorner) {
+              this.container.style.cursor = 'nwse-resize';
+              this.tooltip.style.display = 'block';
+              this.tooltip.style.left = `${pos.screenX - this.container.getBoundingClientRect().left}px`;
+              this.tooltip.style.top = `${pos.screenY - this.container.getBoundingClientRect().top}px`;
+              this.tooltip.textContent = `Corner (${this.W.toFixed(1)} × ${this.H.toFixed(1)}) - Drag to resize`;
+              this.handleMesh.scale.set(1.3, 1.3, 1.3);
+            } else if (circHover !== -1) {
+              this.container.style.cursor = 'grab';
+              this.tooltip.style.display = 'block';
+              this.tooltip.style.left = `${pos.screenX - this.container.getBoundingClientRect().left}px`;
+              this.tooltip.style.top = `${pos.screenY - this.container.getBoundingClientRect().top}px`;
+              this.tooltip.textContent = `Circle ${circHover + 1} (r = ${this.r.toFixed(2)} cm) - Drag freely!`;
+              this.handleMesh.scale.set(1, 1, 1);
+            } else {
+              this.container.style.cursor = this.viewMode === '3d' ? 'grab' : 'default';
+              this.tooltip.style.display = 'none';
+              this.handleMesh.scale.set(1, 1, 1);
+            }
+          } else if (this.isDraggingCorner) {
+            this.raycaster.setFromCamera(this.mouse, this.activeCamera);
+            if (this.raycaster.ray.intersectPlane(this.planeZ, this.planeIntersection)) {
+              let calcW = this.planeIntersection.x * 2.0;
+              let calcH = this.planeIntersection.y * 2.0;
+              calcW = Math.max(3.8, Math.min(24.0, calcW));
+              calcH = Math.max(2.8, Math.min(16.0, calcH));
+              this.W = Math.round(calcW * 10) / 10;
+              this.H = Math.round(calcH * 10) / 10;
+              this.computeOptimalPacking();
+              this.updateScene();
+
+              this.tooltip.style.display = 'block';
+              this.tooltip.style.left = `${pos.screenX - this.container.getBoundingClientRect().left}px`;
+              this.tooltip.style.top = `${pos.screenY - this.container.getBoundingClientRect().top}px`;
+              this.tooltip.textContent = `W: ${this.W.toFixed(1)} cm | H: ${this.H.toFixed(1)} cm ➜ D: ${this.D.toFixed(2)} cm (r: ${this.r.toFixed(2)} cm)`;
+            }
+          } else if (this.draggedCircleIdx !== -1) {
+            this.raycaster.setFromCamera(this.mouse, this.activeCamera);
+            if (this.raycaster.ray.intersectPlane(this.planeZ, this.planeIntersection)) {
+              const halfW = this.W / 2;
+              const halfH = this.H / 2;
+              const clampedX = Math.max(-halfW + this.r, Math.min(halfW - this.r, this.planeIntersection.x));
+              const clampedY = Math.max(-halfH + this.r, Math.min(halfH - this.r, this.planeIntersection.y));
+              const c = this.circleStates[this.draggedCircleIdx];
+              c.vx = (clampedX - c.x) * 0.3;
+              c.vy = (clampedY - c.y) * 0.3;
+              c.x = clampedX;
+              c.y = clampedY;
+            }
+          }
+        };
+
+        const onUp = () => {
+          if (this.isDraggingCorner) {
+            this.isDraggingCorner = false;
+            this.container.style.cursor = this.hoveredCorner ? 'nwse-resize' : 'default';
+            this.tooltip.style.display = 'none';
+            if (this.viewMode === '3d') this.controls.enabled = true;
+          }
+          if (this.draggedCircleIdx !== -1) {
+            this.draggedCircleIdx = -1;
+            this.container.style.cursor = 'default';
+            this.tooltip.style.display = 'none';
+            if (this.viewMode === '3d') this.controls.enabled = true;
+          }
+        };
+
+        this.renderer.domElement.addEventListener('mousedown', onDown);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+
+        this.renderer.domElement.addEventListener('touchstart', onDown, { passive: true });
+        window.addEventListener('touchmove', onMove, { passive: true });
+        window.addEventListener('touchend', onUp);
+
+        window.addEventListener('resize', () => {
+          const w = this.container.clientWidth;
+          const h = this.container.clientHeight;
+          this.renderer.setSize(w, h);
+          this.persCamera.aspect = w / h;
+          this.persCamera.updateProjectionMatrix();
+          this.adjustZoom();
+        });
+      }
+    }
+
+    // =========================================================================
+    // SIMULATOR 1: TWO CIRCLES (Optimal & Free Space Filling)
+    // =========================================================================
+    class TwoCirclesSimulator extends BaseCircleSimulator {
+      constructor() {
+        super('canvas-container-1', 'tooltip-1', 2);
+        this.computeOptimalPacking();
+        this.updateScene();
+      }
+
+      computeOptimalPacking() {
+        const w = this.W;
+        const h = this.H;
+
+        if (this.fillMode === 'puzzle') {
+          // Classic puzzle formula
+          const sum = w + h;
+          const prod = 2.0 * w * h;
+          this.D = sum - Math.sqrt(prod);
+          this.r = this.D / 2.0;
+
+          // Corner pinned positions
+          const halfW = w / 2;
+          const halfH = h / 2;
+          this.circleStates[0].x = -halfW + this.r;
+          this.circleStates[0].y = -halfH + this.r;
+          this.circleStates[1].x = halfW - this.r;
+          this.circleStates[1].y = halfH - this.r;
+        } else {
+          // Free Space Filling: Maximize Diameter
+          // 1. Horizontal line: D = H if W >= 2H
+          // 2. Vertical line: D = W if H >= 2W
+          // 3. Diagonal pack: D = (W + H) - sqrt(2WH)
+          let maxD = (w + h) - Math.sqrt(2.0 * w * h);
+          if (w >= 2.0 * h) {
+            maxD = Math.max(maxD, h);
+          }
+          if (h >= 2.0 * w) {
+            maxD = Math.max(maxD, w);
+          }
+          this.D = Math.min(maxD, Math.min(w, h));
+          this.r = this.D / 2.0;
+
+          // If circles are initialized or outside bounds, relax them smoothly
+          const halfW = w / 2;
+          const halfH = h / 2;
+          for (let i = 0; i < 2; i++) {
+            const c = this.circleStates[i];
+            c.x = Math.max(-halfW + this.r, Math.min(halfW - this.r, c.x));
+            c.y = Math.max(-halfH + this.r, Math.min(halfH - this.r, c.y));
+          }
+        }
+      }
+
+      setFillMode(mode) {
+        this.fillMode = mode;
+        this.updateModePills();
+        this.computeOptimalPacking();
+        this.updateScene();
+      }
+
+      updateModePills() {
+        document.getElementById('p1-mode-free').classList.toggle('active', this.fillMode === 'free');
+        document.getElementById('p1-mode-puzzle').classList.toggle('active', this.fillMode === 'puzzle');
+        document.getElementById('p1-math-mode').textContent = this.fillMode === 'free' ? 'Free Floating Maximal Fill' : 'Puzzle Corner-Tangent';
+      }
+
+      updateScene() {
+        // UI stat updates
+        document.getElementById('p1-txt-w').textContent = `${this.W.toFixed(2)} cm`;
+        document.getElementById('p1-txt-h').textContent = `${this.H.toFixed(2)} cm`;
+        document.getElementById('p1-txt-d').textContent = `${this.D.toFixed(2)} cm`;
+        document.getElementById('p1-txt-r').textContent = `${this.r.toFixed(2)} cm`;
+        document.getElementById('p1-slider-w-val').textContent = `${this.W.toFixed(1)} cm`;
+        document.getElementById('p1-slider-h-val').textContent = `${this.H.toFixed(1)} cm`;
+        document.getElementById('p1-slider-w').value = this.W;
+        document.getElementById('p1-slider-h').value = this.H;
+
+        // Space fill efficiency %
+        const circleArea = 2 * Math.PI * this.r * this.r;
+        const rectArea = this.W * this.H;
+        const fillPercent = Math.min(100, (circleArea / rectArea) * 100).toFixed(1);
+        document.getElementById('p1-txt-fill').textContent = `${fillPercent}%`;
+        document.getElementById('p1-fill-bar').style.width = `${fillPercent}%`;
+
+        const halfW = this.W / 2;
+        const halfH = this.H / 2;
+
+        this.rectMesh.geometry.dispose();
+        if (this.viewMode === '3d') {
+          this.rectMesh.geometry = new THREE.BoxGeometry(this.W, this.H, 0.2);
+          this.rectMesh.position.set(0, 0, -0.1);
+        } else {
+          this.rectMesh.geometry = new THREE.PlaneGeometry(this.W, this.H);
+          this.rectMesh.position.set(0, 0, 0);
+        }
+
+        this.rectLine.geometry.setFromPoints([
+          new THREE.Vector3(-halfW, -halfH, 0.01),
+          new THREE.Vector3(halfW, -halfH, 0.01),
+          new THREE.Vector3(halfW, halfH, 0.01),
+          new THREE.Vector3(-halfW, halfH, 0.01)
+        ]);
+
+        const zOff = this.viewMode === '3d' ? 0.32 : 0.04;
+
+        for (let i = 0; i < 2; i++) {
+          const c = this.circleStates[i];
+          const mesh = this.circleMeshes[i];
+          const line = this.circleLines[i];
+          const rLine = this.radiusLines[i];
+          const hit = this.circleHitBoxes[i];
+
+          mesh.geometry.dispose();
+          hit.geometry.dispose();
+
+          if (this.viewMode === '3d') {
+            mesh.geometry = new THREE.CylinderGeometry(this.r, this.r, 0.3, 64);
+            mesh.rotation.x = Math.PI / 2;
+            mesh.position.set(c.x, c.y, 0.15);
+          } else {
+            mesh.geometry = new THREE.CircleGeometry(this.r, 64);
+            mesh.rotation.x = 0;
+            mesh.position.set(c.x, c.y, 0.02);
+          }
+
+          hit.geometry = new THREE.CircleGeometry(this.r, 16);
+          hit.position.set(c.x, c.y, zOff + 0.01);
+
+          const pts = [];
+          for (let k = 0; k <= 64; k++) {
+            const th = (k / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(c.x + Math.cos(th) * this.r, c.y + Math.sin(th) * this.r, zOff - 0.01));
+          }
+          line.geometry.setFromPoints(pts);
+
+          rLine.geometry.setFromPoints([
+            new THREE.Vector3(c.x, c.y, zOff),
+            new THREE.Vector3(c.x + this.r, c.y, zOff)
+          ]);
+        }
+
+        this.handleMesh.position.set(halfW, halfH, zOff + 0.06);
+        this.handlePulseRing.position.set(halfW, halfH, zOff + 0.05);
+        this.handleHitBox.position.set(halfW, halfH, zOff + 0.06);
+
+        this.renderDimensions(halfW, halfH, zOff);
+        this.adjustZoom();
+      }
+
+      renderDimensions(halfW, halfH, zOff) {
+        while (this.dimLinesGroup.children.length > 0) {
+          const item = this.dimLinesGroup.children[0];
+          if (item.material) {
+            if (item.material.map) item.material.map.dispose();
+            item.material.dispose();
+          }
+          if (item.geometry) item.geometry.dispose();
+          this.dimLinesGroup.remove(item);
+        }
+
+        const dimMat = new THREE.LineBasicMaterial({ color: 0xe11d48, linewidth: 2 });
+        const yBottom = -halfH - 1.0;
+        this.dimLinesGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-halfW, yBottom - 0.25, 0.02),
+          new THREE.Vector3(-halfW, yBottom + 0.25, 0.02),
+          new THREE.Vector3(-halfW, yBottom, 0.02),
+          new THREE.Vector3(halfW, yBottom, 0.02),
+          new THREE.Vector3(halfW, yBottom - 0.25, 0.02),
+          new THREE.Vector3(halfW, yBottom + 0.25, 0.02)
+        ]), dimMat));
+
+        const wLabel = createTextSprite(`${this.W.toFixed(1)} cm`, 32, '#e11d48');
+        wLabel.position.set(0, yBottom - 0.55, 0.05);
+        this.dimLinesGroup.add(wLabel);
+
+        const xRight = halfW + 1.0;
+        this.dimLinesGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(xRight - 0.25, -halfH, 0.02),
+          new THREE.Vector3(xRight + 0.25, -halfH, 0.02),
+          new THREE.Vector3(xRight, -halfH, 0.02),
+          new THREE.Vector3(xRight, halfH, 0.02),
+          new THREE.Vector3(xRight - 0.25, halfH, 0.02),
+          new THREE.Vector3(xRight + 0.25, halfH, 0.02)
+        ]), dimMat));
+
+        const hLabel = createTextSprite(`${this.H.toFixed(1)} cm`, 32, '#e11d48');
+        hLabel.position.set(xRight + 0.85, 0, 0.05);
+        this.dimLinesGroup.add(hLabel);
+
+        for (let i = 0; i < 2; i++) {
+          const c = this.circleStates[i];
+          const rText = createTextSprite(`r = ${this.r.toFixed(2)}`, 22, '#0f172a');
+          rText.position.set(c.x + this.r / 2, c.y - 0.40, zOff + 0.02);
+          this.dimLinesGroup.add(rText);
+        }
+      }
+
+      animate(time) {
+        this.updatePhysics();
+
+        // Update mesh positions dynamically
+        const zOff = this.viewMode === '3d' ? 0.32 : 0.04;
+        for (let i = 0; i < 2; i++) {
+          const c = this.circleStates[i];
+          const mesh = this.circleMeshes[i];
+          const line = this.circleLines[i];
+          const rLine = this.radiusLines[i];
+          const hit = this.circleHitBoxes[i];
+
+          if (this.viewMode === '3d') {
+            mesh.position.set(c.x, c.y, 0.15);
+          } else {
+            mesh.position.set(c.x, c.y, 0.02);
+          }
+          hit.position.set(c.x, c.y, zOff + 0.01);
+
+          const pts = [];
+          for (let k = 0; k <= 64; k++) {
+            const th = (k / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(c.x + Math.cos(th) * this.r, c.y + Math.sin(th) * this.r, zOff - 0.01));
+          }
+          line.geometry.setFromPoints(pts);
+
+          rLine.geometry.setFromPoints([
+            new THREE.Vector3(c.x, c.y, zOff),
+            new THREE.Vector3(c.x + this.r, c.y, zOff)
+          ]);
+        }
+
+        const pulse = 1.0 + 0.3 * Math.sin(time * 5.0);
+        this.handlePulseRing.scale.set(pulse, pulse, 1);
+        this.handlePulseRing.material.opacity = 0.8 - 0.3 * Math.sin(time * 5.0);
+
+        if (this.viewMode === '3d' && this.controls.enabled) {
+          this.controls.update();
+        }
+        this.renderer.render(this.scene, this.activeCamera);
+      }
+    }
+
+    // =========================================================================
+    // SIMULATOR 2: THREE CIRCLES (Optimal & Free Space Filling)
+    // =========================================================================
+    class ThreeCirclesSimulator extends BaseCircleSimulator {
+      constructor() {
+        super('canvas-container-2', 'tooltip-2', 3);
+        this.computeOptimalPacking();
+        this.updateScene();
+      }
+
+      computeOptimalPacking() {
+        const w = this.W;
+        const h = this.H;
+        const halfW = w / 2;
+        const halfH = h / 2;
+
+        if (this.fillMode === 'puzzle') {
+          // Diagonal chain formula
+          const disc = 3 * w * w + 2 * w * h + 3 * h * h;
+          this.D = (Math.sqrt(disc) - (w + h)) / 2.0;
+          this.r = this.D / 2.0;
+
+          this.circleStates[0].x = -halfW + this.r;
+          this.circleStates[0].y = -halfH + this.r;
+          this.circleStates[1].x = 0;
+          this.circleStates[1].y = 0;
+          this.circleStates[2].x = halfW - this.r;
+          this.circleStates[2].y = halfH - this.r;
+        } else if (this.fillMode === 'triangular') {
+          // Triangular pack
+          this.D = (w + 4 * h) - 2 * Math.sqrt(h * (2 * w + 3 * h));
+          this.r = this.D / 2.0;
+
+          this.circleStates[0].x = -halfW + this.r;
+          this.circleStates[0].y = -halfH + this.r;
+          this.circleStates[1].x = halfW - this.r;
+          this.circleStates[1].y = -halfH + this.r;
+          this.circleStates[2].x = 0;
+          this.circleStates[2].y = halfH - this.r;
+        } else {
+          // Free Space Filling: Maximize 3-circle diameter
+          // Test candidate packings:
+          // 1. Triple horizontal row: D = H if W >= 3H
+          // 2. Triple vertical column: D = W if H >= 3W
+          // 3. Triangular pack: (w + 4h) - 2*sqrt(h*(2w + 3h))
+          // 4. Diagonal chain: (sqrt(3w^2 + 2wh + 3h^2) - (w+h)) / 2
+          let dCandidates = [];
+          if (w >= 3.0 * h) dCandidates.push(h);
+          if (h >= 3.0 * w) dCandidates.push(w);
+
+          // Triangular candidates (both orientations)
+          const dTri1 = (w + 4 * h) - 2 * Math.sqrt(Math.max(0, h * (2 * w + 3 * h)));
+          if (dTri1 > 0 && dTri1 <= h && w >= 2 * dTri1) dCandidates.push(dTri1);
+
+          const dTri2 = (h + 4 * w) - 2 * Math.sqrt(Math.max(0, w * (2 * h + 3 * w)));
+          if (dTri2 > 0 && dTri2 <= w && h >= 2 * dTri2) dCandidates.push(dTri2);
+
+          const dDiag = (Math.sqrt(3 * w * w + 2 * w * h + 3 * h * h) - (w + h)) / 2.0;
+          if (dDiag > 0 && dDiag <= Math.min(w, h)) dCandidates.push(dDiag);
+
+          let bestD = dCandidates.length > 0 ? Math.max(...dCandidates) : dDiag;
+          this.D = Math.min(bestD, Math.min(w, h));
+          this.r = this.D / 2.0;
+
+          // Relax circle positions inside box
+          for (let i = 0; i < 3; i++) {
+            const c = this.circleStates[i];
+            c.x = Math.max(-halfW + this.r, Math.min(halfW - this.r, c.x));
+            c.y = Math.max(-halfH + this.r, Math.min(halfH - this.r, c.y));
+          }
+        }
+      }
+
+      setFillMode(mode) {
+        this.fillMode = mode;
+        this.updateModePills();
+        this.computeOptimalPacking();
+        this.updateScene();
+      }
+
+      updateModePills() {
+        document.getElementById('p2-mode-free').classList.toggle('active', this.fillMode === 'free');
+        document.getElementById('p2-mode-puzzle').classList.toggle('active', this.fillMode === 'puzzle');
+        document.getElementById('p2-mode-tri').classList.toggle('active', this.fillMode === 'triangular');
+
+        let modeText = 'Free Floating Maximal Fill';
+        if (this.fillMode === 'puzzle') modeText = 'Diagonal Chain';
+        if (this.fillMode === 'triangular') modeText = 'Triangular Pack';
+        document.getElementById('p2-math-mode').textContent = modeText;
+      }
+
+      updateScene() {
+        document.getElementById('p2-txt-w').textContent = `${this.W.toFixed(2)} cm`;
+        document.getElementById('p2-txt-h').textContent = `${this.H.toFixed(2)} cm`;
+        document.getElementById('p2-txt-d').textContent = `${this.D.toFixed(2)} cm`;
+        document.getElementById('p2-txt-r').textContent = `${this.r.toFixed(2)} cm`;
+        document.getElementById('p2-slider-w-val').textContent = `${this.W.toFixed(1)} cm`;
+        document.getElementById('p2-slider-h-val').textContent = `${this.H.toFixed(1)} cm`;
+        document.getElementById('p2-slider-w').value = this.W;
+        document.getElementById('p2-slider-h').value = this.H;
+
+        // Space fill efficiency %
+        const circleArea = 3 * Math.PI * this.r * this.r;
+        const rectArea = this.W * this.H;
+        const fillPercent = Math.min(100, (circleArea / rectArea) * 100).toFixed(1);
+        document.getElementById('p2-txt-fill').textContent = `${fillPercent}%`;
+        document.getElementById('p2-fill-bar').style.width = `${fillPercent}%`;
+
+        const halfW = this.W / 2;
+        const halfH = this.H / 2;
+
+        this.rectMesh.geometry.dispose();
+        if (this.viewMode === '3d') {
+          this.rectMesh.geometry = new THREE.BoxGeometry(this.W, this.H, 0.2);
+          this.rectMesh.position.set(0, 0, -0.1);
+        } else {
+          this.rectMesh.geometry = new THREE.PlaneGeometry(this.W, this.H);
+          this.rectMesh.position.set(0, 0, 0);
+        }
+
+        this.rectLine.geometry.setFromPoints([
+          new THREE.Vector3(-halfW, -halfH, 0.01),
+          new THREE.Vector3(halfW, -halfH, 0.01),
+          new THREE.Vector3(halfW, halfH, 0.01),
+          new THREE.Vector3(-halfW, halfH, 0.01)
+        ]);
+
+        const zOff = this.viewMode === '3d' ? 0.32 : 0.04;
+
+        for (let i = 0; i < 3; i++) {
+          const c = this.circleStates[i];
+          const mesh = this.circleMeshes[i];
+          const line = this.circleLines[i];
+          const rLine = this.radiusLines[i];
+          const hit = this.circleHitBoxes[i];
+
+          mesh.geometry.dispose();
+          hit.geometry.dispose();
+
+          if (this.viewMode === '3d') {
+            mesh.geometry = new THREE.CylinderGeometry(this.r, this.r, 0.3, 64);
+            mesh.rotation.x = Math.PI / 2;
+            mesh.position.set(c.x, c.y, 0.15);
+          } else {
+            mesh.geometry = new THREE.CircleGeometry(this.r, 64);
+            mesh.rotation.x = 0;
+            mesh.position.set(c.x, c.y, 0.02);
+          }
+
+          hit.geometry = new THREE.CircleGeometry(this.r, 16);
+          hit.position.set(c.x, c.y, zOff + 0.01);
+
+          const pts = [];
+          for (let k = 0; k <= 64; k++) {
+            const th = (k / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(c.x + Math.cos(th) * this.r, c.y + Math.sin(th) * this.r, zOff - 0.01));
+          }
+          line.geometry.setFromPoints(pts);
+
+          rLine.geometry.setFromPoints([
+            new THREE.Vector3(c.x, c.y, zOff),
+            new THREE.Vector3(c.x + this.r, c.y, zOff)
+          ]);
+        }
+
+        this.handleMesh.position.set(halfW, halfH, zOff + 0.06);
+        this.handlePulseRing.position.set(halfW, halfH, zOff + 0.05);
+        this.handleHitBox.position.set(halfW, halfH, zOff + 0.06);
+
+        this.renderDimensions(halfW, halfH, zOff);
+        this.adjustZoom();
+      }
+
+      renderDimensions(halfW, halfH, zOff) {
+        while (this.dimLinesGroup.children.length > 0) {
+          const item = this.dimLinesGroup.children[0];
+          if (item.material) {
+            if (item.material.map) item.material.map.dispose();
+            item.material.dispose();
+          }
+          if (item.geometry) item.geometry.dispose();
+          this.dimLinesGroup.remove(item);
+        }
+
+        const dimMat = new THREE.LineBasicMaterial({ color: 0xe11d48, linewidth: 2 });
+        const yBottom = -halfH - 1.0;
+        this.dimLinesGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-halfW, yBottom - 0.25, 0.02),
+          new THREE.Vector3(-halfW, yBottom + 0.25, 0.02),
+          new THREE.Vector3(-halfW, yBottom, 0.02),
+          new THREE.Vector3(halfW, yBottom, 0.02),
+          new THREE.Vector3(halfW, yBottom - 0.25, 0.02),
+          new THREE.Vector3(halfW, yBottom + 0.25, 0.02)
+        ]), dimMat));
+
+        const wLabel = createTextSprite(`${this.W.toFixed(1)} cm`, 32, '#e11d48');
+        wLabel.position.set(0, yBottom - 0.55, 0.05);
+        this.dimLinesGroup.add(wLabel);
+
+        const xRight = halfW + 1.0;
+        this.dimLinesGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(xRight - 0.25, -halfH, 0.02),
+          new THREE.Vector3(xRight + 0.25, -halfH, 0.02),
+          new THREE.Vector3(xRight, -halfH, 0.02),
+          new THREE.Vector3(xRight, halfH, 0.02),
+          new THREE.Vector3(xRight - 0.25, halfH, 0.02),
+          new THREE.Vector3(xRight + 0.25, halfH, 0.02)
+        ]), dimMat));
+
+        const hLabel = createTextSprite(`${this.H.toFixed(1)} cm`, 32, '#e11d48');
+        hLabel.position.set(xRight + 0.85, 0, 0.05);
+        this.dimLinesGroup.add(hLabel);
+
+        for (let i = 0; i < 3; i++) {
+          const c = this.circleStates[i];
+          const rText = createTextSprite(`r = ${this.r.toFixed(2)}`, 22, '#0f172a');
+          rText.position.set(c.x + this.r / 2, c.y - 0.40, zOff + 0.02);
+          this.dimLinesGroup.add(rText);
+        }
+      }
+
+      animate(time) {
+        this.updatePhysics();
+
+        const zOff = this.viewMode === '3d' ? 0.32 : 0.04;
+        for (let i = 0; i < 3; i++) {
+          const c = this.circleStates[i];
+          const mesh = this.circleMeshes[i];
+          const line = this.circleLines[i];
+          const rLine = this.radiusLines[i];
+          const hit = this.circleHitBoxes[i];
+
+          if (this.viewMode === '3d') {
+            mesh.position.set(c.x, c.y, 0.15);
+          } else {
+            mesh.position.set(c.x, c.y, 0.02);
+          }
+          hit.position.set(c.x, c.y, zOff + 0.01);
+
+          const pts = [];
+          for (let k = 0; k <= 64; k++) {
+            const th = (k / 64) * Math.PI * 2;
+            pts.push(new THREE.Vector3(c.x + Math.cos(th) * this.r, c.y + Math.sin(th) * this.r, zOff - 0.01));
+          }
+          line.geometry.setFromPoints(pts);
+
+          rLine.geometry.setFromPoints([
+            new THREE.Vector3(c.x, c.y, zOff),
+            new THREE.Vector3(c.x + this.r, c.y, zOff)
+          ]);
+        }
+
+        const pulse = 1.0 + 0.3 * Math.sin(time * 5.0);
+        this.handlePulseRing.scale.set(pulse, pulse, 1);
+        this.handlePulseRing.material.opacity = 0.8 - 0.3 * Math.sin(time * 5.0);
+
+        if (this.viewMode === '3d' && this.controls.enabled) {
+          this.controls.update();
+        }
+        this.renderer.render(this.scene, this.activeCamera);
+      }
+    }
+
+    // Initialize both simulators
+    const sim1 = new TwoCirclesSimulator();
+    const sim2 = new ThreeCirclesSimulator();
+
+    // Render loop
+    const clock = new THREE.Clock();
+    function animateAll() {
+      requestAnimationFrame(animateAll);
+      const time = clock.getElapsedTime();
+      sim1.animate(time);
+      sim2.animate(time);
+    }
+    animateAll();
+  </script>
+</body>
+</html>

@@ -5,6 +5,98 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // -------------------------------------------------------------------------
+  // 0. Internationalization (EN / DE / SK / IT)
+  // -------------------------------------------------------------------------
+  const I18N = window.LIVINGPIXEL_I18N || {};
+  const SUPPORTED_LANGS = ['en', 'de', 'sk', 'it'];
+  const LANG_STORAGE_KEY = 'livingpixel_lang';
+
+  function resolveInitialLang() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlLang = (params.get('lang') || '').toLowerCase();
+      if (SUPPORTED_LANGS.includes(urlLang)) return urlLang;
+
+      const saved = (localStorage.getItem(LANG_STORAGE_KEY) || '').toLowerCase();
+      if (SUPPORTED_LANGS.includes(saved)) return saved;
+    } catch (e) {
+      // Fallback when storage is unavailable
+    }
+    return 'en';
+  }
+
+  let currentLang = resolveInitialLang();
+
+  function t(key, vars = {}) {
+    const dict = I18N[currentLang] || I18N.en || {};
+    const fallback = I18N.en || {};
+    let value = dict[key] !== undefined ? dict[key] : (fallback[key] !== undefined ? fallback[key] : key);
+    Object.keys(vars).forEach(k => {
+      value = String(value).replace(new RegExp(`\\{${k}\\}`, 'g'), vars[k]);
+    });
+    return value;
+  }
+
+  // Forward-declared refresh callbacks hooked after simulator & estimator init
+  let refreshDynamicTranslations = null;
+
+  function applyLanguage(lang, persist = true) {
+    const targetLang = SUPPORTED_LANGS.includes(lang) ? lang : 'en';
+    currentLang = targetLang;
+
+    if (persist) {
+      try {
+        localStorage.setItem(LANG_STORAGE_KEY, targetLang);
+      } catch (e) {
+        // Ignore storage quota / privacy mode errors
+      }
+    }
+
+    document.documentElement.lang = targetLang;
+
+    const dict = I18N[targetLang] || I18N.en || {};
+    if (dict.pageTitle) {
+      document.title = dict.pageTitle;
+    }
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && dict.pageDescription) {
+      metaDesc.setAttribute('content', dict.pageDescription);
+    }
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key) el.textContent = t(key);
+    });
+
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      if (key) el.innerHTML = t(key);
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) el.setAttribute('placeholder', t(key));
+    });
+
+    document.querySelectorAll('#langSwitcher .lang-btn').forEach(btn => {
+      const isActive = btn.getAttribute('data-lang') === targetLang;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    if (typeof refreshDynamicTranslations === 'function') {
+      refreshDynamicTranslations();
+    }
+  }
+
+  document.querySelectorAll('#langSwitcher .lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.getAttribute('data-lang') || 'en';
+      applyLanguage(lang, true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // 1. Audio Synth for Remote Control Tactile Feedback (Web Audio API)
   // -------------------------------------------------------------------------
   let audioCtx = null;
@@ -60,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateTvClock();
   setInterval(updateTvClock, 10000);
 
-  function focusCard(index, playSound = true) {
+  function focusCard(index, playSound = true, shouldScroll = true) {
     if (!isTvPoweredOn) return;
     if (index < 0) index = 0;
     if (index >= simCards.length) index = simCards.length - 1;
@@ -70,17 +162,20 @@ document.addEventListener('DOMContentLoaded', () => {
     simCards.forEach((card, idx) => {
       if (idx === currentCardIndex) {
         card.classList.add('active');
-        card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        if (shouldScroll) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        }
 
-        const title = card.getAttribute('data-title') || 'Featured App';
-        const desc = card.getAttribute('data-desc') || '';
-        const badge = card.getAttribute('data-badge') || 'FEATURED';
-        const name = card.querySelector('.sim-card-name')?.textContent || '';
+        const key = card.getAttribute('data-key') || `simC${idx + 1}`;
+        const title = t(`${key}Title`);
+        const desc = t(`${key}Desc`);
+        const badge = t(`${key}Badge`);
+        const name = t(`${key}Name`);
 
         if (simTitle) simTitle.textContent = title;
         if (simDesc) simDesc.textContent = desc;
         if (simBadge) simBadge.textContent = badge;
-        if (simFocusLabel) simFocusLabel.textContent = `Card ${idx + 1} (${name})`;
+        if (simFocusLabel) simFocusLabel.textContent = `${t('simCardWord')} ${idx + 1} (${name})`;
       } else {
         card.classList.remove('active');
       }
@@ -122,7 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dpadUp) {
     dpadUp.addEventListener('click', () => {
       playUiClick(750, 'triangle', 0.06);
-      showToast(`Selected Category: ${simCards[currentCardIndex].getAttribute('data-badge')}`);
+      const activeKey = simCards[currentCardIndex]?.getAttribute('data-key') || `simC${currentCardIndex + 1}`;
+      showToast(t('toastCategory', { badge: t(`${activeKey}Badge`) }));
     });
   }
 
@@ -136,32 +232,32 @@ document.addEventListener('DOMContentLoaded', () => {
     dpadOk.addEventListener('click', () => {
       if (!isTvPoweredOn) return;
       playUiClick(880, 'sine', 0.09);
-      const activeCard = simCards[currentCardIndex];
-      const title = activeCard ? activeCard.getAttribute('data-title') : 'Tizen App';
-      showToast(`▶ Launched "${title}" via Tizen AVPlay engine!`);
+      const activeKey = simCards[currentCardIndex]?.getAttribute('data-key') || `simC${currentCardIndex + 1}`;
+      const title = t(`${activeKey}Title`);
+      showToast(t('toastLaunched', { title }));
     });
   }
 
   if (remoteBack) {
     remoteBack.addEventListener('click', () => {
       playUiClick(360, 'sine', 0.06);
-      focusCard(0);
-      showToast('Return Key: Reset focus to Primary Rail');
+      focusCard(0, true, true);
+      showToast(t('toastReturnKey'));
     });
   }
 
   if (remoteHome) {
     remoteHome.addEventListener('click', () => {
       playUiClick(650, 'sine', 0.08);
-      focusCard(0);
-      showToast('Smart Hub Home Invoked');
+      focusCard(0, true, true);
+      showToast(t('toastHomeKey'));
     });
   }
 
   if (remotePlay) {
     remotePlay.addEventListener('click', () => {
       playUiClick(800, 'sine', 0.08);
-      showToast('▶ AVPlay Hardware Play/Pause toggled');
+      showToast(t('toastPlayKey'));
     });
   }
 
@@ -172,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (simScreen) {
         simScreen.classList.toggle('power-off', !isTvPoweredOn);
       }
-      showToast(isTvPoweredOn ? 'Samsung Smart TV Powered ON' : 'Samsung Smart TV in Low-Power Standby');
+      showToast(isTvPoweredOn ? t('toastPowerOn') : t('toastPowerOff'));
     });
   }
 
@@ -236,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxWeeks = minWeeks + 1;
 
     if (estimatedWeeksEl) {
-      estimatedWeeksEl.textContent = `${minWeeks} – ${maxWeeks} Weeks`;
+      estimatedWeeksEl.textContent = `${minWeeks} – ${maxWeeks} ${t('estWeeksUnit')}`;
     }
 
     // Phases
@@ -244,14 +340,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const p2 = (minWeeks * 0.55).toFixed(1);
     const p3 = (minWeeks * 0.20).toFixed(1);
 
-    if (phase1TimeEl) phase1TimeEl.textContent = `${p1} Wks`;
-    if (phase2TimeEl) phase2TimeEl.textContent = `${p2} Wks`;
-    if (phase3TimeEl) phase3TimeEl.textContent = `${p3} Wks`;
+    if (phase1TimeEl) phase1TimeEl.textContent = `${p1} ${t('estWksUnit')}`;
+    if (phase2TimeEl) phase2TimeEl.textContent = `${p2} ${t('estWksUnit')}`;
+    if (phase3TimeEl) phase3TimeEl.textContent = `${p3} ${t('estWksUnit')}`;
 
     if (estimatedSprintText) {
-      estimatedSprintText.textContent = isExpedited
-        ? '⚡ Expedited delivery track: Dedicated priority engineering sprints.'
-        : 'Comprehensive turnkey architecture, testing, and certification readiness.';
+      estimatedSprintText.textContent = isExpedited ? t('estCaptionExp') : t('estCaptionStd');
     }
   }
 
@@ -276,27 +370,36 @@ document.addEventListener('DOMContentLoaded', () => {
     cb.addEventListener('change', calculateEstimate);
   });
 
-  calculateEstimate();
-
   // Apply to Consultation Form
   if (applyEstimatorBtn) {
     applyEstimatorBtn.addEventListener('click', () => {
-      const activeAppType = document.querySelector('#appTypeOptions .pill-select.active')?.textContent.trim() || '';
+      const activeAppBtn = document.querySelector('#appTypeOptions .pill-select.active');
+      const activeTypeKey = activeAppBtn?.getAttribute('data-type') || 'ott';
+      const activeAppType = activeAppBtn?.textContent.trim() || '';
       const selectedFeatures = featureCheckboxes
         .filter(cb => cb.checked)
-        .map(cb => cb.parentElement.textContent.trim().split('(')[0].trim());
+        .map(cb => cb.parentElement.textContent.trim().replace(/\s*\([^)]*\)\s*$/, '').trim());
+
+      const scopeMap = {
+        ott: 'OTT Video Streaming App',
+        signage: 'Commercial Digital Signage (SSSP)',
+        port: 'Web-to-Tizen TV Migration',
+        audit: 'Store Certification & QA Audit'
+      };
 
       // Pre-select scope
-      if (projectScopeSelect) {
-        if (activeAppType.includes('OTT')) projectScopeSelect.value = 'OTT Video Streaming App';
-        else if (activeAppType.includes('Signage')) projectScopeSelect.value = 'Commercial Digital Signage (SSSP)';
-        else if (activeAppType.includes('Migration')) projectScopeSelect.value = 'Web-to-Tizen TV Migration';
-        else if (activeAppType.includes('Audit')) projectScopeSelect.value = 'Store Certification & QA Audit';
+      if (projectScopeSelect && scopeMap[activeTypeKey]) {
+        projectScopeSelect.value = scopeMap[activeTypeKey];
       }
 
       // Pre-fill notes
       if (projectNotesText) {
-        projectNotesText.value = `Estimated Timeline: ${estimatedWeeksEl?.textContent || ''}\nProject Type: ${activeAppType}\nSelected Capabilities:\n- ${selectedFeatures.join('\n- ')}\nPace: ${isExpedited ? 'Expedited Delivery' : 'Standard Sprints'}\n\nAdditional Requirements:\n`;
+        projectNotesText.value =
+          `${t('estPrefillHeader')} ${estimatedWeeksEl?.textContent || ''}\n` +
+          `${t('estPrefillType')} ${activeAppType}\n` +
+          `${t('estPrefillFeatures')}\n- ${selectedFeatures.join('\n- ')}\n` +
+          `${t('estPrefillPace')} ${isExpedited ? t('estPrefillPaceExp') : t('estPrefillPaceStd')}\n\n` +
+          `${t('estPrefillExtra')}\n`;
       }
 
       // Scroll to contact form smoothly
@@ -304,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (contactSection) {
         contactSection.scrollIntoView({ behavior: 'smooth' });
       }
-      showToast('Scope applied to consultation request form!');
+      showToast(t('toastScopeApplied'));
     });
   }
 
@@ -330,9 +433,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function copyEmail() {
     const email = 'lubos.kostros@cadline.co.uk';
     navigator.clipboard.writeText(email).then(() => {
-      showToast(`Copied ${email} to clipboard!`);
+      showToast(t('toastCopied', { email }));
     }).catch(() => {
-      showToast(`Contact: ${email}`);
+      showToast(t('toastContactFallback', { email }));
     });
   }
 
@@ -340,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (emailLink) {
     emailLink.addEventListener('click', (e) => {
       // Allow mailto default, but also give visual confirmation
-      showToast('Opening email client for lubos.kostros@cadline.co.uk...');
+      showToast(t('toastOpeningMail', { email: 'lubos.kostros@cadline.co.uk' }));
     });
   }
 
@@ -354,20 +457,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const name = document.getElementById('userName')?.value.trim() || 'Client';
       const email = document.getElementById('userEmail')?.value.trim() || '';
-      const scope = document.getElementById('projectScope')?.value || 'Tizen TV Project';
+      const scopeSelect = document.getElementById('projectScope');
+      const scope = scopeSelect?.value || 'Tizen TV Project';
+      const scopeLabel = scopeSelect?.options[scopeSelect.selectedIndex]?.textContent.trim() || scope;
       const notes = document.getElementById('projectNotes')?.value.trim() || '';
 
       const subject = encodeURIComponent(`LivingPixel Consultation Request: ${scope} (${name})`);
+      const projectIntro = scope === 'Website Redesign & Modernization'
+        ? t('mailIntroRedesign')
+        : t('mailIntroTv');
       const body = encodeURIComponent(
-        `Hello Lubos,\n\nI would like to discuss a bespoke Samsung Tizen OS project with LivingPixel.\n\n` +
-        `Name/Company: ${name}\n` +
-        `Email: ${email}\n` +
-        `Scope: ${scope}\n\n` +
-        `Project Details & Scope Notes:\n${notes}\n\n` +
-        `Sent via LivingPixel GitHub Landing Page.`
+        `${t('mailGreeting')}\n\n${projectIntro}\n\n` +
+        `${t('mailNameLabel')} ${name}\n` +
+        `${t('mailEmailLabel')} ${email}\n` +
+        `${t('mailScopeLabel')} ${scopeLabel}\n\n` +
+        `${t('mailNotesLabel')}\n${notes}\n\n` +
+        `${t('mailSentVia')}`
       );
 
-      showToast('Preparing your consultation email to Lubos...');
+      showToast(t('toastPreparingMail'));
 
       // Trigger mailto
       window.location.href = `mailto:lubos.kostros@cadline.co.uk?subject=${subject}&body=${body}`;
@@ -399,15 +507,69 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close menu when clicking any nav link on mobile
     navLinks.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
+        if (window.innerWidth <= 1120) {
           navLinks.style.display = 'none';
         }
       });
     });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1120) {
+        navLinks.removeAttribute('style');
+      }
+    });
   }
 
   // -------------------------------------------------------------------------
-  // 7. Active Navigation on Scroll
+  // 7. Website Redesign Portfolio Filter & CTA
+  // -------------------------------------------------------------------------
+  const redesignFilterButtons = Array.from(document.querySelectorAll('#redesignFilters .pill-select'));
+  const redesignCards = Array.from(document.querySelectorAll('#redesignGrid .redesign-card'));
+  const requestRedesignBtn = document.getElementById('requestRedesignBtn');
+
+  redesignFilterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.getAttribute('data-filter') || 'all';
+      redesignFilterButtons.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      redesignCards.forEach(card => {
+        const category = card.getAttribute('data-category');
+        const shouldShow = filter === 'all' || category === filter;
+        card.classList.toggle('is-hidden', !shouldShow);
+      });
+    });
+  });
+
+  if (requestRedesignBtn) {
+    requestRedesignBtn.addEventListener('click', () => {
+      if (projectScopeSelect) {
+        projectScopeSelect.value = 'Website Redesign & Modernization';
+      }
+      if (projectNotesText && !projectNotesText.value.trim()) {
+        projectNotesText.value = t('redesignPrefill');
+      }
+      const contactSection = document.getElementById('contact');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      showToast(t('toastRedesignSelected'));
+    });
+  }
+
+  // Initialize dynamic translations (updates simulator & estimator in current language)
+  refreshDynamicTranslations = () => {
+    focusCard(currentCardIndex, false, false);
+    calculateEstimate();
+  };
+  applyLanguage(currentLang, false);
+
+  // -------------------------------------------------------------------------
+  // 8. Active Navigation on Scroll
   // -------------------------------------------------------------------------
   const sections = document.querySelectorAll('section[id]');
   const allNavLinks = document.querySelectorAll('.nav-link');

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Exclude non-page repository, local server, and runtime paths
+Disallow: /api/
+Disallow: /data/
+Disallow: /serve.js
+Disallow: /README.md
+Disallow: /CNAME

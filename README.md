@@ -6,7 +6,7 @@ A high-performance, dark-mode single-page landing page engineered for **LivingPi
 
 - **Interactive 10-Foot Spatial TV Simulator**: Real-time virtual TV screen with a tactile Samsung Smart Remote simulator (D-pad directional control, audio synthesis click feedback, power standby, and key event handling).
 - **Interactive Project Scope & Timeline Estimator**: Instant estimation calculator for OTT streaming, commercial signage, Web-to-Tizen migration, and store certification audits with automated breakdown and consultation form autofill.
-- **Direct Client Inquiries**: Frictionless direct email integration with `lubos.kostros@cadline.co.uk`, one-click copy to clipboard with toast notification, and pre-formatted consultation mailto dispatch.
+- **Direct Client Inquiries**: Frictionless direct email integration with `info@livingpixelstudios.com`, one-click copy to clipboard with toast notification, and pre-formatted consultation mailto dispatch.
 - **Production Showcase**: High-resolution photorealistic Samsung TV mockups running 4K HDR media playback, enterprise hospitality dashboards, and interactive health/fitness TV experiences.
 - **Ultra-Fast Single Page**: Pure Vanilla HTML5, CSS3, and JavaScript — zero heavy framework dependencies, loads instantly, and runs directly on GitHub Pages.
 
@@ -75,5 +75,5 @@ You can open `index.html` directly in any browser:
 ## 🎨 Customizing Details
 
 - **GitHub Profile Link**: In `index.html`, search for `https://github.com` and replace with your exact GitHub handle (e.g., `https://github.com/yourusername`).
-- **Contact Email**: The email is currently configured to `lubos.kostros@cadline.co.uk`. You can update this in `index.html` and `app.js` whenever needed.
+- **Contact Email**: The email is currently configured to `info@livingpixelstudios.com`. You can update this in `index.html` and `app.js` whenever needed.
 - **Showcase Items**: Add your upcoming apps or live Samsung TV Store links into the `#showcase` section cards.

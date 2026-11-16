@@ -430,12 +430,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3500);
   }
 
+  const CONTACT_EMAIL = 'info@livingpixelstudios.com';
+
   function copyEmail() {
-    const email = 'lubos.kostros@cadline.co.uk';
-    navigator.clipboard.writeText(email).then(() => {
-      showToast(t('toastCopied', { email }));
+    navigator.clipboard.writeText(CONTACT_EMAIL).then(() => {
+      showToast(t('toastCopied', { email: CONTACT_EMAIL }));
     }).catch(() => {
-      showToast(t('toastContactFallback', { email }));
+      showToast(t('toastContactFallback', { email: CONTACT_EMAIL }));
     });
   }
 
@@ -443,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (emailLink) {
     emailLink.addEventListener('click', (e) => {
       // Allow mailto default, but also give visual confirmation
-      showToast(t('toastOpeningMail', { email: 'lubos.kostros@cadline.co.uk' }));
+      showToast(t('toastOpeningMail', { email: CONTACT_EMAIL }));
     });
   }
 
@@ -478,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(t('toastPreparingMail'));
 
       // Trigger mailto
-      window.location.href = `mailto:lubos.kostros@cadline.co.uk?subject=${subject}&body=${body}`;
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
     });
   }
 

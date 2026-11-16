@@ -449,12 +449,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // -------------------------------------------------------------------------
-  // 5. Contact Form Handler (Direct Mailto Link Dispatch)
+  // 5. Contact Form Handler (Direct FormSubmit AJAX Dispatch — No mailto)
   // -------------------------------------------------------------------------
+  const FORMSUBMIT_AJAX_URL = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
   const projectForm = document.getElementById('projectForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const submitBtnLabel = submitBtn?.querySelector('[data-i18n="submitBtn"]');
+  const formStatusEl = document.getElementById('formStatus');
+  let currentFormStatus = null;
+
+  function setFormStatus(type, message, key = null) {
+    if (!formStatusEl) return;
+    if (!type) {
+      currentFormStatus = null;
+      formStatusEl.hidden = true;
+      formStatusEl.textContent = '';
+      formStatusEl.className = 'form-status';
+      return;
+    }
+    currentFormStatus = { type, key, message };
+    formStatusEl.hidden = false;
+    formStatusEl.className = `form-status ${type}`;
+    formStatusEl.textContent = message;
+  }
+
   if (projectForm) {
-    projectForm.addEventListener('submit', (e) => {
+    projectForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      const honey = document.getElementById('formHoney')?.value || '';
+      if (honey.trim()) {
+        projectForm.reset();
+        return;
+      }
 
       const name = document.getElementById('userName')?.value.trim() || 'Client';
       const email = document.getElementById('userEmail')?.value.trim() || '';
@@ -463,23 +490,54 @@ document.addEventListener('DOMContentLoaded', () => {
       const scopeLabel = scopeSelect?.options[scopeSelect.selectedIndex]?.textContent.trim() || scope;
       const notes = document.getElementById('projectNotes')?.value.trim() || '';
 
-      const subject = encodeURIComponent(`LivingPixel Consultation Request: ${scope} (${name})`);
-      const projectIntro = scope === 'Website Redesign & Modernization'
-        ? t('mailIntroRedesign')
-        : t('mailIntroTv');
-      const body = encodeURIComponent(
-        `${t('mailGreeting')}\n\n${projectIntro}\n\n` +
-        `${t('mailNameLabel')} ${name}\n` +
-        `${t('mailEmailLabel')} ${email}\n` +
-        `${t('mailScopeLabel')} ${scopeLabel}\n\n` +
-        `${t('mailNotesLabel')}\n${notes}\n\n` +
-        `${t('mailSentVia')}`
-      );
-
+      setFormStatus(null, '');
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtnLabel) submitBtnLabel.textContent = t('formSending');
       showToast(t('toastPreparingMail'));
 
-      // Trigger mailto
-      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+      try {
+        const response = await fetch(FORMSUBMIT_AJAX_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            _replyto: email,
+            _subject: `LivingPixel Consultation Request: ${scope} (${name})`,
+            scope: scopeLabel,
+            language: currentLang.toUpperCase(),
+            notes,
+            _template: 'table',
+            _captcha: 'false',
+            _honey: ''
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        const isSuccess = response.ok && (data.success === true || data.success === 'true');
+
+        if (isSuccess) {
+          projectForm.reset();
+          setFormStatus('success', t('formSentStatus', { email: CONTACT_EMAIL }), 'formSentStatus');
+          showToast(t('formSentToast', { email: CONTACT_EMAIL }));
+        } else {
+          const serverMsg = String(data?.message || '').trim();
+          const needsActivation = /activat|confirm/i.test(serverMsg);
+          const statusKey = needsActivation ? 'formActivationStatus' : (serverMsg ? null : 'formErrorStatus');
+          const statusText = statusKey ? t(statusKey, { email: CONTACT_EMAIL }) : serverMsg;
+          setFormStatus('error', statusText, statusKey);
+          showToast(needsActivation ? statusText : t('formErrorToast'));
+        }
+      } catch (err) {
+        setFormStatus('error', t('formErrorStatus', { email: CONTACT_EMAIL }), 'formErrorStatus');
+        showToast(t('formErrorToast'));
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtnLabel) submitBtnLabel.textContent = t('submitBtn');
+      }
     });
   }
 
@@ -562,10 +620,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Initialize dynamic translations (updates simulator & estimator in current language)
+  // Initialize dynamic translations (updates simulator, estimator, & form status in current language)
   refreshDynamicTranslations = () => {
     focusCard(currentCardIndex, false, false);
     calculateEstimate();
+    if (submitBtn?.disabled && submitBtnLabel) {
+      submitBtnLabel.textContent = t('formSending');
+    }
+    if (currentFormStatus?.key && formStatusEl && !formStatusEl.hidden) {
+      formStatusEl.textContent = t(currentFormStatus.key, { email: CONTACT_EMAIL });
+    }
   };
   applyLanguage(currentLang, false);
 

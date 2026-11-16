@@ -1160,7 +1160,10 @@
 
         <!-- Contact Form -->
         <div class="contact-form-wrap">
-          <form class="contact-form" id="projectForm">
+          <form class="contact-form" id="projectForm" action="https://formsubmit.co/info@livingpixelstudios.com" method="POST">
+            <input type="text" name="_honey" id="formHoney" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
+            <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="_captcha" value="false">
             <h3 class="form-title" data-i18n="formTitle">Request a Consultation</h3>
             <p class="form-sub" data-i18n="formSub">We reply within 24 hours with an architectural breakdown.</p>
 
@@ -1200,6 +1203,7 @@
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
+            <div class="form-status" id="formStatus" role="status" aria-live="polite" hidden></div>
             <div class="form-footer-hint" data-i18n="formHint">Direct communication. No spam, ever.</div>
           </form>
         </div>
